@@ -1,0 +1,31 @@
+package com.dynamicwebservice.entity;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+@Entity
+@Table(name = "ENDPOINT")
+public class EndpointEntity {
+
+    @Column(name = "PUBLISH_URL", nullable = false)
+    @Id
+    private String publishUrl;
+
+    @Column(name = "BEAN_NAME", nullable = false)
+    private String beanName;
+
+    @Column(name = "JAR_FILE_ID", nullable = false)
+    private String jarFileId;
+
+    @Column(name = "CLASS_PATH", nullable = false)
+    private String classPath;
+
+    @Column(name = "IS_ACTIVE", nullable = false)
+    private Boolean isActive;
+}

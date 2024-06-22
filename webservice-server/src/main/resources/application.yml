@@ -1,0 +1,43 @@
+spring:
+  application:
+    name: MockWebservice
+  main:
+    allow-bean-definition-overriding: true
+  config:
+    import: classpath:resources.properties
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+      settings:
+        web-allow-others: true
+  jpa:
+    hibernate:
+      ddl-auto: none
+  flyway:
+    enabled: true
+    locations: classpath:db.migration
+
+server:
+  servlet:
+    context-path: /mockwebservice
+  port: 8080
+
+web:
+  resource:
+    pathPattern: /static/** # 靜態資源 Uri
+    location: /WEB-INF/static/ # 靜態資源對應目錄，預設是在 /WEB-INF 目錄下
+  thymeleaf:
+    enable: true # thymeleaf page 開關
+    viewNames: html/*, thymeleaf/* # thymeleaf 對應 uri
+    stuff: .html # thymeleaf 副檔名
+    templateMode: HTML # thymeleaf 模式
+  service:
+    uri-mapping: /webservice/*
+    map:
+      example:
+        beanName: exampleWebServiceImpl # example 資源對應的 bean
+        uri-mapping: /example # web service 資源對應 Uri，http://localhost:8080/example/webservice/example?wsdl
+      user:
+        beanName: exampleUserServiceImpl # example 資源對應的 bean
+        uri-mapping: /user # web service 資源對應 Uri，http://localhost:8080/mockwebservice/webservice/user?wsdl

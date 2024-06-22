@@ -1,0 +1,73 @@
+/* material-table-overview.component.scss */
+.mat-table {
+  width: 100%;
+
+  .mat-header-cell {
+    color: rgb(33, 43, 53);
+    font-weight: 700;
+    font-size: 1em;
+    padding: 8px;
+    background-color: #EEEEEE;
+
+    &:first-of-type {
+      padding: 8px 24px;
+    }
+  }
+
+  .mat-column-flex-2 {
+    flex: 2;
+  }
+
+  .mat-cell {
+    padding: 8px;
+    line-height: 1.5em;
+
+    &:first-of-type {
+      padding: 8px 24px;
+    }
+  }
+}
+table {
+  width: 100%;
+}
+
+.table-header {
+  width: 90%;
+  margin: auto;
+  text-align: right;
+  margin-bottom: 10px;
+}
+
+.button-add-row {
+  background: #1b9e1b;
+  color: #ffffff;
+}
+
+.button-remove-rows {
+  background: red;
+  color: #ffffff;
+  margin-right: 5px;
+}
+
+.button-remove {
+  color: red;
+}
+
+::ng-deep .mat-form-field-infix {
+  width: 100% !important;
+}
+
+.form-input {
+  padding-right: 5px;
+}
+
+th.mat-sort-header-sorted {
+  color: black;
+}
+p {
+  display: block;
+  margin-top: 1em;
+  margin-bottom: 1em;
+  margin-left: 0;
+  margin-right: 0;
+}
