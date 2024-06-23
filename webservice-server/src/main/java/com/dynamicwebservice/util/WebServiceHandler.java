@@ -1,6 +1,7 @@
 package com.dynamicwebservice.util;
 
 import com.dynamicwebservice.entity.EndpointEntity;
+import com.zipe.util.classloader.CustomClassLoader;
 import com.zipe.util.string.StringConstant;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.cxf.Bus;
@@ -16,8 +17,7 @@ public class WebServiceHandler {
     public void registerWebService(EndpointEntity endpointEntity, ApplicationContext context, String fileName) throws MalformedURLException, ClassNotFoundException {
 
         String jarPath = "file:" + context.getEnvironment().getProperty("jar.file.dir") + fileName;
-//        CustomClassLoader loader = new CustomClassLoader(new URL[]{new URL(jarPath)}, this.getClass().getClassLoader());
-        TestClassLoader loader = new TestClassLoader(new URL[]{new URL(jarPath)}, this.getClass().getClassLoader());
+        CustomClassLoader loader = new CustomClassLoader(new URL[]{new URL(jarPath)}, this.getClass().getClassLoader());
         DynamicBeanUtil dynamicBeanUtil = new DynamicBeanUtil(context);
         EndpointImpl endpoint;
         try {
@@ -45,9 +45,9 @@ public class WebServiceHandler {
                     serverRegistry.getServers().remove(server);
                 });
         String jarPath = "file:" + context.getEnvironment().getProperty("jar.file.dir") + jarName;
-        TestClassLoader loader;
+        CustomClassLoader loader;
         try {
-            loader = new TestClassLoader(new URL[]{new URL(jarPath)}, this.getClass().getClassLoader());
+            loader = new CustomClassLoader(new URL[]{new URL(jarPath)}, this.getClass().getClassLoader());
             loader.unloadJarFile(new URL(jarPath));
 
         } catch (MalformedURLException e) {

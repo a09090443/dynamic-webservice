@@ -18,7 +18,7 @@ repositories {
 }
 
 dependencies {
-    implementation("io.github.a09090443:base-spring-boot-starter:3.2.5.3")
+    implementation("io.github.a09090443:base-spring-boot-starter:3.2.5.4")
     implementation("io.github.a09090443:web-service-spring-boot-starter:3.2.5.2")
     implementation("net.sf.jasperreports:jasperreports:6.20.6")
     implementation("com.github.librepdf:openpdf:2.0.2")
