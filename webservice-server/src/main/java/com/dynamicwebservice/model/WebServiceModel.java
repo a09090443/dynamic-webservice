@@ -1,9 +1,9 @@
-package com.dynamicwebservice.dto;
+package com.dynamicwebservice.model;
 
 import lombok.Data;
 
 @Data
-public class EndpointResponse {
+public class WebServiceModel {
     public String publishUrl;
     public String beanName;
     public String classPath;

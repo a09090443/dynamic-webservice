@@ -38,9 +38,19 @@ const COLUMNS_SCHEMA = [
     label: 'Class路徑',
   },
   {
+    key: 'jarFileName',
+    type: 'file',
+    label: 'Jar檔案',
+  },
+  {
     key: 'isActive',
     type: 'boolean',
     label: '狀態',
+  },
+  {
+    key: 'isEdit',
+    type: 'isEdit',
+    label: '',
   },
 ];
 
@@ -155,6 +165,7 @@ export class EndpointComponent implements OnInit, AfterViewInit {
       publishUrl: '',
       beanName: '',
       classPath: '',
+      jarFileName: '',
       isActive: false
     }];
     this.dataSource.data = [newRow, ...this.dataSource.data];

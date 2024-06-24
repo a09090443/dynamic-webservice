@@ -9,16 +9,17 @@ import com.dynamicwebservice.entity.JarFileEntity;
 import com.dynamicwebservice.entity.MockResponseEntity;
 import com.dynamicwebservice.enums.JarFileStatus;
 import com.dynamicwebservice.jdbc.JarFileJDBC;
+import com.dynamicwebservice.jdbc.MockResponseJDBC;
+import com.dynamicwebservice.model.WebServiceModel;
 import com.dynamicwebservice.repository.EndpointRepository;
 import com.dynamicwebservice.repository.JarFileRepository;
 import com.dynamicwebservice.repository.MockResponseRepository;
 import com.dynamicwebservice.service.DynamicWebService;
 import com.dynamicwebservice.util.WebServiceHandler;
+import com.zipe.enums.ResourceEnum;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.beanutils.BeanUtils;
 import org.apache.cxf.Bus;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.security.oauth2.server.servlet.OAuth2AuthorizationServerProperties.Endpoint;
 import org.springframework.context.ApplicationContext;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.stereotype.Service;
@@ -31,10 +32,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -75,13 +77,20 @@ public class DynamicWebServiceImpl implements DynamicWebService {
 
     @Override
     public List<EndpointResponse> getEndpoints() {
-        List<EndpointEntity> endpointEntities = endpointRepository.findAll();
-        return endpointEntities.stream().map(endpoint -> {
+//        List<EndpointEntity> endpointEntities = endpointRepository.findAll();
+
+        ResourceEnum resource = ResourceEnum.SQL.getResource(JarFileJDBC.SQL_SELECT_ENDPOINT_RELATED_JAR_FILE);
+        List<WebServiceModel> webServiceModelList = jarFileJDBC.queryForList(resource, new HashMap<>(), WebServiceModel.class);
+
+        return webServiceModelList.stream().map(endpoint -> {
             EndpointResponse response = new EndpointResponse();
             response.setPublishUrl(endpoint.getPublishUrl());
             response.setClassPath(endpoint.getClassPath());
             response.setBeanName(endpoint.getBeanName());
             response.setIsActive(endpoint.getIsActive());
+            response.setJarFileId(endpoint.getJarFileId());
+            response.setJarFileName(endpoint.getJarFileName());
+            response.setFileStatus(endpoint.getFileStatus());
             return response;
         }).toList();
     }

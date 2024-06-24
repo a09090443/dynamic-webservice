@@ -3,5 +3,6 @@ export interface Endpoints {
   publishUrl: string,
   beanName: string,
   classPath: string,
+  jarFileName: string,
   isActive: boolean
 }

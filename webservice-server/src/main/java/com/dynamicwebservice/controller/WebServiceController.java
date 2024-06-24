@@ -21,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Objects;
 
@@ -38,7 +39,7 @@ public class WebServiceController {
     }
 
     @GetMapping("/getEndpoints")
-    public ResponseEntity<List<EndpointResponse>> getEndpoints() {
+    public ResponseEntity<List<EndpointResponse>> getEndpoints() throws SQLException {
         return ResponseEntity.ok().body(dynamicWebService.getEndpoints());
     }
 
