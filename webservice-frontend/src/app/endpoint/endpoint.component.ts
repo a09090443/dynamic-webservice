@@ -171,4 +171,11 @@ export class EndpointComponent implements OnInit, AfterViewInit {
     this.dataSource.data = [newRow, ...this.dataSource.data];
   }
 
+  onFileSelected(event: Event) {
+    const files = (event.target as HTMLInputElement).files;
+    if (files && files.length > 0) {
+      const file = files[0];
+      // rest of the code
+    }
+  }
 }

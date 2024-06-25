@@ -49,10 +49,13 @@
           </div>
           <span *ngSwitchCase="'date'">
           {{ element[column.key] | date: 'mediumDate' }}
-        </span>
+          </span>
+          <span *ngSwitchCase="'file'">
+          <a [href]="element[column.key]" target="_blank">{{ element[column.key] }}</a>
+          </span>
           <span *ngSwitchDefault>
           {{ element[column.key] }}
-        </span>
+          </span>
         </div>
         <div [ngSwitch]="column.type" *ngIf="element.isEdit">
           <div class="btn-edit" *ngSwitchCase="'isEdit'">
@@ -85,8 +88,12 @@
               [ngModel]="element[column.key]"
             />
           </mat-form-field>
+          <div class="file-input-wrapper" *ngSwitchCase="'file'">
+            <mat-label>File matInput</mat-label>
+            <input type="file" (change)="onFileSelected($event)">
+          </div>
           <mat-form-field class="form-input" *ngSwitchDefault>
-            <input [type]="column.type" matInput [(ngModel)]="element[column.key]" />
+            <input [type]="column.type" matInput [(ngModel)]="element[column.key]"/>
           </mat-form-field>
         </div>
       </td>

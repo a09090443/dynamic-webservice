@@ -26,6 +26,12 @@
       padding: 8px 24px;
     }
   }
+
+  .mat-cell, .mat-footer-cell, .mat-header-cell {
+  // fix for ie11 'align-items: center'
+  word-break: break-all !important;
+    max-width: 120px !important;
+  }
 }
 table {
   width: 100%;
