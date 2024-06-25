@@ -9,7 +9,6 @@ import com.dynamicwebservice.entity.JarFileEntity;
 import com.dynamicwebservice.entity.MockResponseEntity;
 import com.dynamicwebservice.enums.JarFileStatus;
 import com.dynamicwebservice.jdbc.JarFileJDBC;
-import com.dynamicwebservice.jdbc.MockResponseJDBC;
 import com.dynamicwebservice.model.WebServiceModel;
 import com.dynamicwebservice.repository.EndpointRepository;
 import com.dynamicwebservice.repository.JarFileRepository;
@@ -32,10 +31,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 @Slf4j
@@ -77,7 +74,6 @@ public class DynamicWebServiceImpl implements DynamicWebService {
 
     @Override
     public List<EndpointResponse> getEndpoints() {
-//        List<EndpointEntity> endpointEntities = endpointRepository.findAll();
 
         ResourceEnum resource = ResourceEnum.SQL.getResource(JarFileJDBC.SQL_SELECT_ENDPOINT_RELATED_JAR_FILE);
         List<WebServiceModel> webServiceModelList = jarFileJDBC.queryForList(resource, new HashMap<>(), WebServiceModel.class);
