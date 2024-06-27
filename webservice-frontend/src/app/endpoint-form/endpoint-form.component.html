@@ -1,0 +1,47 @@
+<h1 mat-dialog-title>{{ isEditMode ? 'Edit Data' : 'Add Data' }}</h1>
+<div mat-dialog-content>
+  <form [formGroup]="form" (ngSubmit)="onSave()" style="display: flex; flex-direction: column;">
+    <mat-form-field class="example-form-field" style="flex: 1;">
+      <mat-label>Publish URL</mat-label>
+      <input matInput type="text" formControlName="publishUrl">
+      <button *ngIf="form.get('publishUrl')?.value" mat-icon-button matSuffix aria-label="Clear" (click)="clearField('publishUrl')">
+        <mat-icon>close</mat-icon>
+      </button>
+    </mat-form-field>
+
+    <mat-form-field class="example-form-field" style="flex: 1;">
+      <mat-label>Bean Name</mat-label>
+      <input matInput type="text" formControlName="beanName">
+      <button *ngIf="form.get('beanName')?.value" mat-icon-button matSuffix aria-label="Clear" (click)="clearField('beanName')">
+        <mat-icon>close</mat-icon>
+      </button>
+    </mat-form-field>
+
+    <mat-form-field class="example-form-field" style="flex: 1;">
+      <mat-label>Class Path</mat-label>
+      <input matInput type="text" formControlName="classPath">
+      <button *ngIf="form.get('classPath')?.value" mat-icon-button matSuffix aria-label="Clear" (click)="clearField('classPath')">
+        <mat-icon>close</mat-icon>
+      </button>
+    </mat-form-field>
+
+    <mat-form-field class="example-form-field" style="flex: 1;" *ngIf="data">
+      <mat-label>Jar File Name</mat-label>
+      <input matInput type="text" [value]="data.jarFileName" disabled>
+    </mat-form-field>
+
+    <div class="example-form-field" style="flex: 1;">
+      <label for="file">Upload Jar File</label>
+      <input type="file" id="file" (change)="onFileChange($event)" accept=".jar">
+      <button *ngIf="form.get('file')?.value" mat-icon-button matSuffix aria-label="Clear" (click)="removeFile()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+    <mat-checkbox formControlName="isActive">Active</mat-checkbox>
+  </form>
+</div>
+
+<div mat-dialog-actions>
+  <button mat-button (click)="onCancel()">Cancel</button>
+  <button mat-button [disabled]="form.invalid" type="submit">Save</button>
+</div>

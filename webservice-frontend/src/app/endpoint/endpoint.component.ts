@@ -7,14 +7,15 @@ import {MatCheckbox} from "@angular/material/checkbox";
 import {FormsModule} from "@angular/forms";
 import {MatDatepickerModule} from "@angular/material/datepicker";
 import {MatNativeDateModule} from "@angular/material/core";
-import {MatDialogModule} from "@angular/material/dialog";
+import {MatDialog, MatDialogModule} from "@angular/material/dialog";
 import {HeaderComponent} from "../header/header.component";
 import {MatTableDataSource, MatTableModule} from "@angular/material/table";
 import {MatSort, MatSortModule} from "@angular/material/sort";
 import {MatButtonModule} from "@angular/material/button";
 import {MatPaginator, MatPaginatorModule} from "@angular/material/paginator";
-import {HttpClient} from "@angular/common/http";
-import {Endpoints} from "../model/endpoints";
+import {HttpClient, HttpClientModule} from "@angular/common/http";
+import {Endpoint} from "../model/endpoint";
+import {EndpointFormComponent} from "../endpoint-form/endpoint-form.component";
 
 const COLUMNS_SCHEMA = [
   {
@@ -75,7 +76,8 @@ const COLUMNS_SCHEMA = [
     DatePipe,
     NgSwitchDefault,
     NgForOf,
-    HeaderComponent
+    HeaderComponent,
+    HttpClientModule
   ],
   templateUrl: './endpoint.component.html',
   styleUrl: './endpoint.component.css'
@@ -87,13 +89,14 @@ export class EndpointComponent implements OnInit, AfterViewInit {
   displayedColumns: string[] = COLUMNS_SCHEMA.map((col) => col.key);
   columnsSchema: any = COLUMNS_SCHEMA;
 
-  dataSource: MatTableDataSource<Endpoints[]> = new MatTableDataSource<Endpoints[]>();
+  dataSource: MatTableDataSource<Endpoint[]> = new MatTableDataSource<Endpoint[]>();
   @ViewChild(MatSort) dataSort: MatSort = new MatSort();
   @ViewChild(MatPaginator) paginator: MatPaginator = <MatPaginator>{};
 
-  selection = new SelectionModel<Endpoints[]>(true, []);
+  selection = new SelectionModel<Endpoint[]>(true, []);
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient,
+              public dialog: MatDialog) {
   }
 
   ngOnInit(): void {
@@ -159,23 +162,11 @@ export class EndpointComponent implements OnInit, AfterViewInit {
     console.log(id);
   }
 
-  addRow() {
-    const newRow: Endpoints[] = [{
-      rowId: Date.now().toString(),
-      publishUrl: '',
-      beanName: '',
-      classPath: '',
-      jarFileName: '',
-      isActive: false
-    }];
-    this.dataSource.data = [newRow, ...this.dataSource.data];
-  }
-
-  onFileSelected(event: Event) {
-    const files = (event.target as HTMLInputElement).files;
-    if (files && files.length > 0) {
-      const file = files[0];
-      // rest of the code
-    }
+  openDialog(row?: Endpoint) {
+    this.dialog.open(EndpointFormComponent, {
+      width: '600px',
+      disableClose: true,
+      data: row,
+    });
   }
 }
