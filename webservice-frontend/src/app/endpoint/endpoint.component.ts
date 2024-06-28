@@ -17,6 +17,7 @@ import {HttpClientModule} from "@angular/common/http";
 import {Endpoint} from "../model/endpoint";
 import {EndpointFormComponent} from "../endpoint-form/endpoint-form.component";
 import {EndpointService} from "../service/endpoint.service";
+import {MatSlideToggle} from "@angular/material/slide-toggle";
 
 const COLUMNS_SCHEMA = [
   {
@@ -40,9 +41,9 @@ const COLUMNS_SCHEMA = [
     label: 'Class路徑',
   },
   {
-    key: 'jarFileName',
+    key: 'jarFileId',
     type: 'file',
-    label: 'Jar檔案',
+    label: 'Jar檔案編號',
   },
   {
     key: 'isActive',
@@ -78,7 +79,8 @@ const COLUMNS_SCHEMA = [
     NgSwitchDefault,
     NgForOf,
     HeaderComponent,
-    HttpClientModule
+    HttpClientModule,
+    MatSlideToggle
   ],
   templateUrl: './endpoint.component.html',
   styleUrl: './endpoint.component.css'
@@ -106,9 +108,9 @@ export class EndpointComponent implements OnInit, AfterViewInit {
 
   fetchDataFromService(): void {
     this.endpointService.fetchData().then(
-      (data: any) => {
-        console.log('Fetched data:', data);
-        this.dataSource = new MatTableDataSource(data);
+      (response: any) => {
+        console.log('Fetched data:', response.data);
+        this.dataSource = new MatTableDataSource(response.data);
         this.dataSource.paginator = this.paginator;
         this.dataSource.sort = this.dataSort;
       },

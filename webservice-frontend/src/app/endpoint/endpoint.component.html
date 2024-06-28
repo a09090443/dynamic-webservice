@@ -1,5 +1,5 @@
 <app-header></app-header>
-<h2>Simple TODO Table</h2>
+<h2>Web service 清單</h2>
 <article class="table-header">
   <button class="button-remove-rows" mat-button (click)="removeSelectedRows()">Remove Endpoints</button>
   <button class="button-add-row" mat-button (click)="openDialog()">Add Endpoint</button>
@@ -50,6 +50,9 @@
           </span>
           <span *ngSwitchCase="'file'">
           <a [href]="element[column.key]" target="_blank">{{ element[column.key] }}</a>
+          </span>
+          <span *ngSwitchCase="'boolean'">
+          <mat-slide-toggle [checked]="element[column.key]" [disabled]="true"></mat-slide-toggle>
           </span>
           <span *ngSwitchDefault>
           {{ element[column.key] }}

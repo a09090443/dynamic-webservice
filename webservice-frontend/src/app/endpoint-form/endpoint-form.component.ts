@@ -55,27 +55,39 @@ export class EndpointFormComponent {
       publishUrl: '',
       beanName: '',
       classPath: '',
-      jarFileName: '', // 设置默认值
+      jarFileId: '',
+      jarFileName: '',
       file: null,
       isActive: false,
     };
+    this.jarFileName = data?.jarFileName || defaultData.jarFileName;
 
     this.form = this.fb.group({
       rowId: [data?.rowId || defaultData.rowId],
       publishUrl: [data?.publishUrl || defaultData.publishUrl, Validators.required],
       beanName: [data?.beanName || defaultData.beanName, Validators.required],
       classPath: [data?.classPath || defaultData.classPath, Validators.required],
-      // jarFileName: [data?.jarFileName || defaultData.jarFileName],
+      jarFileId: [data?.jarFileId || defaultData.jarFileId],
       file: [defaultData.file],
       isActive: [data?.isActive || defaultData.isActive],
     });
-    this.jarFileName = data?.jarFileName || defaultData.jarFileName;
   }
 
   onSave(): void {
     if (this.form.valid) {
       console.log('Form data:', this.form.value);
-      this.dialogRef.close(this.form.value);
+      // this.dialogRef.close(this.form.value);
+      // Assuming you want to send the entire form value to the server
+      const formData = this.form.value;
+      this.endpointService.saveFormData(formData).then(
+        (response: any) => {
+          console.log('Fetched data:', response.data);
+        },
+        (error) => {
+          console.error('Error fetching data:', error);
+          // 处理错误情况
+        }
+      );
     } else {
       console.error('Form is invalid');
     }
@@ -107,7 +119,8 @@ export class EndpointFormComponent {
     if (file) {
       try {
         const responseData = await this.endpointService.uploadFile(file);
-        this.jarFileName = responseData;
+        this.jarFileName = responseData.jarFileName;
+        this.form.get('jarFileId')!.setValue(responseData.jarFileId);
         console.log('File uploaded successfully:', responseData);
       } catch (error) {
         console.error('Error uploading file:', error);

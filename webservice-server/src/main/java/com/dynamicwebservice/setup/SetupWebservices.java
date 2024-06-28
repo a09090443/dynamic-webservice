@@ -1,11 +1,13 @@
 package com.dynamicwebservice.setup;
 
+import com.dynamicwebservice.dto.EndpointDTO;
 import com.dynamicwebservice.entity.EndpointEntity;
 import com.dynamicwebservice.entity.JarFileEntity;
 import com.dynamicwebservice.repository.EndpointRepository;
 import com.dynamicwebservice.repository.JarFileRepository;
 import com.dynamicwebservice.util.WebServiceHandler;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.stereotype.Component;
@@ -36,11 +38,14 @@ public class SetupWebservices implements SmartLifecycle {
         List<EndpointEntity> endpointEntities = endpintRepository.findAllByIsActive(true);
         WebServiceHandler registerWebService = new WebServiceHandler();
         AtomicReference<JarFileEntity> jarFileEntity = new AtomicReference<>();
-                Optional.ofNullable(endpointEntities).ifPresent(entities -> entities.forEach(entity -> {
+        EndpointDTO endpointDTO = new EndpointDTO();
+        Optional.ofNullable(endpointEntities).ifPresent(entities -> entities.forEach(entity -> {
             try {
+                BeanUtils.copyProperties(entity, endpointDTO);
+
                 jarFileEntity.set(jarFileRepository.findById(entity.getJarFileId()).orElseThrow(() -> new FileNotFoundException("找不到對應的 Jar 檔案")));
 
-                registerWebService.registerWebService(entity, context, jarFileEntity.get().getName());
+                registerWebService.registerWebService(endpointDTO, context, jarFileEntity.get().getName());
             } catch (Exception e) {
                 log.error("Web Service 註冊服務:{}, 失敗", entity.getBeanName(), e);
             }

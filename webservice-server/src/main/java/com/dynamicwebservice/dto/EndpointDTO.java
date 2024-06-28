@@ -1,20 +1,19 @@
 package com.dynamicwebservice.dto;
 
 import lombok.Data;
-import org.springframework.web.multipart.MultipartFile;
 
 @Data
-public class WebServiceRequest {
-
-    private String beanName;
-
+public class EndpointDTO {
     private String publishUrl;
 
-    private String classPath;
+    private String beanName;
 
     private String jarFileId;
 
     private String jarFileName;
 
+    private String classPath;
+
     private Boolean isActive;
+
 }

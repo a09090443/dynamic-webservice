@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import {HttpClient, HttpErrorResponse} from "@angular/common/http";
-import {catchError, firstValueFrom, throwError} from "rxjs";
+import {catchError, firstValueFrom, Observable, throwError} from "rxjs";
 
 @Injectable({
   providedIn: 'root'
@@ -11,7 +11,11 @@ export class EndpointService {
   }
 
   fetchData(): Promise<any> {
-    return firstValueFrom(this.http.get('http://localhost:8080/mockwebservice/ws/getEndpoints'));
+    return firstValueFrom(this.http.get('http://localhost:8080/webservice-server/ws/getEndpoints'));
+  }
+
+  saveFormData(formData: any): Promise<any> {
+    return firstValueFrom(this.http.post<any>('http://localhost:8080/webservice-server/ws/registerWebService', formData));
   }
 
   async uploadFile(file: File): Promise<any> {
@@ -19,7 +23,7 @@ export class EndpointService {
     formData.append('file', file);
 
     try {
-      const response: any = await firstValueFrom(this.http.post('http://localhost:8080/mockwebservice/ws/uploadJarFile', formData).pipe(
+      const response: any = await firstValueFrom(this.http.post('http://localhost:8080/webservice-server/ws/uploadJarFile', formData).pipe(
         catchError(this.handleError)
       ));
       if (response.code === 200) {
@@ -33,7 +37,7 @@ export class EndpointService {
     }
   }
 
-  private handleError(error: HttpErrorResponse) {
+  private handleError(error: HttpErrorResponse): Observable<string> {
     if (error.error instanceof ErrorEvent) {
       // 客戶端或網絡錯誤
       console.error('An error occurred:', error.error.message);
@@ -44,11 +48,7 @@ export class EndpointService {
         `body was: ${error.error}`);
     }
     // 返回一個可以處理的錯誤訊息 Observable
-    return throwError('Something bad happened; please try again later.');
+    // @ts-ignore
+    return throwError<string>('Something bad happened; please try again later.');
   }
-  // uploadFile(file: File): Promise<any> {
-  //   const formData = new FormData();
-  //   formData.append('file', file);
-  //   return firstValueFrom(this.http.post('http://localhost:8080/mockwebservice/ws/uploadJarFile', formData));
-  // }
 }

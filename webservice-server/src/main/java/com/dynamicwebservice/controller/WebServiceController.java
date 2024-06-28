@@ -1,6 +1,8 @@
 package com.dynamicwebservice.controller;
 
+import com.dynamicwebservice.dto.EndpointDTO;
 import com.dynamicwebservice.dto.EndpointResponse;
+import com.dynamicwebservice.dto.JarFileResponse;
 import com.dynamicwebservice.dto.MockResponseRequest;
 import com.dynamicwebservice.dto.WebServiceRequest;
 import com.dynamicwebservice.service.DynamicWebService;
@@ -8,6 +10,8 @@ import com.zipe.annotation.ResponseResultBody;
 import com.zipe.dto.Result;
 import com.zipe.enums.ResultStatus;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -21,10 +25,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -40,55 +46,81 @@ public class WebServiceController {
     }
 
     @GetMapping("/getEndpoints")
-    public ResponseEntity<List<EndpointResponse>> getEndpoints() throws SQLException {
-        return ResponseEntity.ok().body(dynamicWebService.getEndpoints());
+    public Result<List<EndpointResponse>> getEndpoints() throws SQLException {
+        return Result.success(dynamicWebService.getEndpoints());
     }
 
     @PostMapping("/getResponseList")
-    public ResponseEntity<String> getResponseList(@RequestBody MockResponseRequest request) {
+    public Result<String> getResponseList(@RequestBody MockResponseRequest request) {
         String content = dynamicWebService.getResponseContent(request);
-        return ResponseEntity.ok().body(content);
+        return Result.success(content);
     }
 
     @PostMapping("/registerWebService")
-    public ResponseEntity<String> registerWebService(@RequestBody WebServiceRequest request) throws MalformedURLException, ClassNotFoundException, FileNotFoundException {
-        dynamicWebService.registerWebService(request);
-        return ResponseEntity.ok().body("Success");
+    public Result<EndpointResponse> registerWebService(@RequestBody WebServiceRequest request) throws MalformedURLException, ClassNotFoundException, FileNotFoundException, InvocationTargetException, IllegalAccessException {
+        log.info("Register web service: {}", request);
+        EndpointDTO endpointDTO = new EndpointDTO();
+        BeanUtils.copyProperties(request, endpointDTO);
+
+        dynamicWebService.saveWebService(endpointDTO);
+        dynamicWebService.enabledWebService(request.getPublishUrl());
+
+        EndpointResponse response = new EndpointResponse();
+        BeanUtils.copyProperties(endpointDTO, response);
+        return Result.success(response);
     }
 
     @PostMapping("/removeWebService")
-    public ResponseEntity<String> removeWebService(@RequestBody WebServiceRequest request) {
-        dynamicWebService.removeWebService(request);
-        return ResponseEntity.ok().body("Success");
+    public Result<String> removeWebService(@RequestBody WebServiceRequest request) throws Exception {
+        dynamicWebService.disabledWebService(request.getPublishUrl(), true);
+        return Result.success(StringUtils.EMPTY);
     }
 
-    public ResponseEntity<String> updateWebService(@RequestBody WebServiceRequest request) {
-        dynamicWebService.updateWebService(request);
+    @PostMapping("/switchWebService")
+    public ResponseEntity<String> switchWebService(@RequestBody WebServiceRequest request) {
+        Optional.ofNullable(request).ifPresent(req -> {
+            if (Boolean.TRUE.equals(req.getIsActive())){
+                try {
+                    dynamicWebService.enabledWebService(req.getPublishUrl());
+                } catch (MalformedURLException | ClassNotFoundException | FileNotFoundException e) {
+                    log.error("Register web service failed", e);
+                }
+            } else {
+                try {
+                    dynamicWebService.disabledWebService(req.getPublishUrl(), false);
+                } catch (Exception e) {
+                    log.error("Remove web service failed", e);
+                }
+            }
+        });
         return ResponseEntity.ok().body("Success");
     }
 
     @PostMapping("/addMockResponse")
-    public ResponseEntity<String> addMockResponse(@RequestBody MockResponseRequest request) {
+    public Result<String> addMockResponse(@RequestBody MockResponseRequest request) {
         dynamicWebService.addMockResponse(request);
-        return ResponseEntity.ok().body("Success");
+        return Result.success("Success");
     }
 
     @PostMapping("/uploadJarFile")
-    public Result<String> uploadJarFile(@RequestParam("file") MultipartFile file) {
+    public Result<JarFileResponse> uploadJarFile(@RequestParam("file") MultipartFile file) {
         try {
             // 檢查檔案是否為空或不是以 .jar 結尾
             if (file.isEmpty() || !Objects.requireNonNull(file.getOriginalFilename()).endsWith(".jar")) {
-                return Result.failure(ResultStatus.BAD_REQUEST, "Please select a .jar file to upload.");
+                log.error("Upload jar file failed: file is empty or not a jar file");
+                return Result.failure(ResultStatus.BAD_REQUEST);
             }
 
             // 執行實際的檔案上傳操作，這裡假設使用 dynamicWebService 來處理上傳
-            String newFileName = dynamicWebService.uploadJarFile(file.getInputStream());
+            JarFileResponse jarFileResponse = dynamicWebService.uploadJarFile(file.getInputStream());
 
-            // 返回成功上傳的訊息和新檔案名稱
-            return Result.success(newFileName);
+            // 返回成功上傳的訊息和新檔案編號
+            return Result.success(jarFileResponse);
         } catch (IOException e) {
             // 如果發生 IO 錯誤，返回伺服器內部錯誤訊息
-            return Result.failure(ResultStatus.INTERNAL_SERVER_ERROR, "Failed to upload file: " + e.getMessage());
+            log.error("Upload jar file failed", e);
+            return Result.failure(ResultStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
 }

@@ -1,7 +1,9 @@
 package com.dynamicwebservice.service.impl;
 
 import com.dynamicwebservice.dao.MockResponseDao;
+import com.dynamicwebservice.dto.EndpointDTO;
 import com.dynamicwebservice.dto.EndpointResponse;
+import com.dynamicwebservice.dto.JarFileResponse;
 import com.dynamicwebservice.dto.MockResponseRequest;
 import com.dynamicwebservice.dto.WebServiceRequest;
 import com.dynamicwebservice.entity.EndpointEntity;
@@ -18,6 +20,7 @@ import com.dynamicwebservice.util.WebServiceHandler;
 import com.zipe.enums.ResourceEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.cxf.Bus;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
@@ -102,47 +105,25 @@ public class DynamicWebServiceImpl implements DynamicWebService {
     }
 
     @Override
-    public void registerWebService(WebServiceRequest request) throws MalformedURLException, ClassNotFoundException, FileNotFoundException {
-        WebServiceHandler registerWebService = new WebServiceHandler();
+    public void saveWebService(EndpointDTO endpointDTO) throws FileNotFoundException {
         try {
 
             EndpointEntity endpointEntity = new EndpointEntity();
-            endpointEntity.setPublishUrl(request.getPublishUrl());
-            endpointEntity.setClassPath(request.getClassPath());
-            endpointEntity.setBeanName(request.getBeanName());
-            endpointEntity.setIsActive(Boolean.TRUE);
+            endpointEntity.setPublishUrl(endpointDTO.getPublishUrl());
+            endpointEntity.setClassPath(endpointDTO.getClassPath());
+            endpointEntity.setBeanName(endpointDTO.getBeanName());
+            endpointEntity.setIsActive(Boolean.FALSE);
+            endpointEntity.setJarFileId(endpointDTO.getJarFileId());
 
-            JarFileEntity jarFileEntity = jarFileRepository.findById(request.getFileId()).orElseThrow(() -> new FileNotFoundException("找不到對應的 Jar 檔案"));
-            endpointEntity.setJarFileId(jarFileEntity.getId());
-
-            registerWebService.registerWebService(endpointEntity, context, jarFileEntity.getName());
-
+            JarFileEntity jarFileEntity = jarFileRepository.findById(endpointDTO.getJarFileId()).orElseThrow(() -> new FileNotFoundException("找不到對應的 Jar 檔案"));
             jarFileEntity.setStatus(JarFileStatus.ACTIVE);
             jarFileRepository.save(jarFileEntity);
 
             endpointRepository.save(endpointEntity);
+            endpointDTO.setJarFileName(jarFileEntity.getName());
         } catch (Exception e) {
             log.error("註冊 Web Service 失敗", e);
             throw e;
-        }
-    }
-
-    @Override
-    public void removeWebService(WebServiceRequest request) {
-        WebServiceHandler registerWebService = new WebServiceHandler();
-        try {
-
-            EndpointEntity endpointEntity = endpointRepository.findById(request.getPublishUrl()).orElseThrow(() -> new FileNotFoundException("找不到對應的 Web Service"));
-
-            JarFileEntity jarFileEntity = jarFileRepository.findById(endpointEntity.getJarFileId()).orElseThrow(() -> new FileNotFoundException("找不到對應的 Jar 檔案"));
-            registerWebService.removeWebService(request.getPublishUrl(), bus, context, jarFileEntity.getName());
-
-            jarFileEntity.setStatus(JarFileStatus.INACTIVE);
-            jarFileRepository.save(jarFileEntity);
-
-            endpointRepository.delete(endpointEntity);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
         }
     }
 
@@ -163,7 +144,7 @@ public class DynamicWebServiceImpl implements DynamicWebService {
     }
 
     @Override
-    public String uploadJarFile(InputStream inputStream) throws IOException {
+    public JarFileResponse uploadJarFile(InputStream inputStream) throws IOException {
 
         // 確保上傳目錄存在
         Path uploadPath = Paths.get(jarFileDir);
@@ -180,7 +161,53 @@ public class DynamicWebServiceImpl implements DynamicWebService {
         jarFileEntity.setName(newFileName);
         jarFileEntity.setStatus(JarFileStatus.INACTIVE);
         jarFileEntity = jarFileRepository.save(jarFileEntity);
-        return jarFileEntity.getId();
+
+        JarFileResponse jarFileResponse = new JarFileResponse();
+        jarFileResponse.setJarFileId(jarFileEntity.getId());
+        jarFileResponse.setJarFileName(jarFileEntity.getName());
+        return jarFileResponse;
+    }
+
+    @Override
+    public void enabledWebService(String publishUrl) throws MalformedURLException, ClassNotFoundException, FileNotFoundException {
+        EndpointEntity endpointEntity = endpointRepository.findById(publishUrl).orElseThrow(() -> new FileNotFoundException("找不到對應的 Web Service"));
+        JarFileEntity jarFileEntity = jarFileRepository.findById(endpointEntity.getJarFileId()).orElseThrow(() -> new FileNotFoundException("找不到對應的 Jar 檔案"));
+        WebServiceHandler registerWebService = new WebServiceHandler();
+        try {
+            EndpointDTO endpointDTO = new EndpointDTO();
+            BeanUtils.copyProperties(endpointEntity, endpointDTO);
+            registerWebService.registerWebService(endpointDTO, context, jarFileEntity.getName());
+            endpointEntity.setIsActive(Boolean.TRUE);
+            endpointRepository.save(endpointEntity);
+        } catch (Exception e) {
+            log.error("註冊 Web Service 失敗", e);
+            throw e;
+        }
+    }
+
+    @Override
+    public void disabledWebService(String publicUrl, Boolean isDeleted) throws FileNotFoundException {
+        EndpointEntity endpointEntity = endpointRepository.findById(publicUrl).orElseThrow(() -> new FileNotFoundException("找不到對應的 Web Service"));
+        JarFileEntity jarFileEntity = jarFileRepository.findById(endpointEntity.getJarFileId()).orElseThrow(() -> new FileNotFoundException("找不到對應的 Jar 檔案"));
+        WebServiceHandler registerWebService = new WebServiceHandler();
+        try {
+            registerWebService.removeWebService(publicUrl, bus, context, jarFileEntity.getName());
+            endpointEntity.setIsActive(Boolean.FALSE);
+            jarFileEntity.setStatus(JarFileStatus.INACTIVE);
+            jarFileRepository.save(jarFileEntity);
+            if (isDeleted) {
+                endpointRepository.delete(endpointEntity);
+            } else {
+                endpointRepository.save(endpointEntity);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void removeWebService(String publishUrl) throws Exception {
+        this.disabledWebService(publishUrl, true);
     }
 
 }

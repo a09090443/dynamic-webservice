@@ -1,6 +1,6 @@
 package com.dynamicwebservice.util;
 
-import com.dynamicwebservice.entity.EndpointEntity;
+import com.dynamicwebservice.dto.EndpointDTO;
 import com.zipe.util.classloader.CustomClassLoader;
 import com.zipe.util.string.StringConstant;
 import lombok.extern.slf4j.Slf4j;
@@ -14,21 +14,21 @@ import java.net.URL;
 
 @Slf4j
 public class WebServiceHandler {
-    public void registerWebService(EndpointEntity endpointEntity, ApplicationContext context, String fileName) throws MalformedURLException, ClassNotFoundException {
+    public void registerWebService(EndpointDTO endpointDTO, ApplicationContext context, String fileName) throws MalformedURLException, ClassNotFoundException {
 
         String jarPath = "file:" + context.getEnvironment().getProperty("jar.file.dir") + fileName;
         CustomClassLoader loader = new CustomClassLoader(new URL[]{new URL(jarPath)}, this.getClass().getClassLoader());
         DynamicBeanUtil dynamicBeanUtil = new DynamicBeanUtil(context);
         EndpointImpl endpoint;
         try {
-            Class<?> loadedClass = loader.loadClass(endpointEntity.getClassPath());
-            this.setBeanName(context, endpointEntity.getBeanName(), loadedClass);
+            Class<?> loadedClass = loader.loadClass(endpointDTO.getClassPath());
+            this.setBeanName(context, endpointDTO.getBeanName(), loadedClass);
 
-            endpoint = new EndpointImpl(context.getBean(Bus.class), dynamicBeanUtil.getBean(endpointEntity.getBeanName(), loadedClass));
-            endpoint.publish(StringConstant.SLASH + endpointEntity.getPublishUrl());
-            log.info("Web Service 註冊服務:{}, 對應 URI:{}", endpointEntity.getBeanName(), endpointEntity.getPublishUrl());
+            endpoint = new EndpointImpl(context.getBean(Bus.class), dynamicBeanUtil.getBean(endpointDTO.getBeanName(), loadedClass));
+            endpoint.publish(StringConstant.SLASH + endpointDTO.getPublishUrl());
+            log.info("Web Service 註冊服務:{}, 對應 URI:{}", endpointDTO.getBeanName(), endpointDTO.getPublishUrl());
         } catch (Exception e) {
-            log.error("Web Service 註冊服務:{}, 失敗", endpointEntity.getBeanName(), e);
+            log.error("Web Service 註冊服務:{}, 失敗", endpointDTO.getBeanName(), e);
             throw e;
         }
     }
