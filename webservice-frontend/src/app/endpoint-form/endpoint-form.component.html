@@ -1,6 +1,6 @@
 <h1 mat-dialog-title>{{ isEditMode ? 'Edit Data' : 'Add Data' }}</h1>
 <div mat-dialog-content>
-  <form [formGroup]="form" (ngSubmit)="onSave()" style="display: flex; flex-direction: column;">
+  <form [formGroup]="form" style="display: flex; flex-direction: column;">
     <mat-form-field class="example-form-field" style="flex: 1;">
       <mat-label>Publish URL</mat-label>
       <input matInput type="text" formControlName="publishUrl">
@@ -25,9 +25,9 @@
       </button>
     </mat-form-field>
 
-    <mat-form-field class="example-form-field" style="flex: 1;" *ngIf="data">
+    <mat-form-field class="example-form-field" style="flex: 1;" *ngIf="jarFileName">
       <mat-label>Jar File Name</mat-label>
-      <input matInput type="text" [value]="data.jarFileName" disabled>
+      <input matInput type="text" [value]="jarFileName" disabled>
     </mat-form-field>
 
     <div class="example-form-field" style="flex: 1;">
@@ -36,12 +36,13 @@
       <button *ngIf="form.get('file')?.value" mat-icon-button matSuffix aria-label="Clear" (click)="removeFile()">
         <mat-icon>close</mat-icon>
       </button>
+      <button mat-button (click)="uploadFile()">Upload</button> <!-- 新增的上傳按鈕 -->
     </div>
-    <mat-checkbox formControlName="isActive">Active</mat-checkbox>
+<!--    <mat-checkbox formControlName="isActive">Active</mat-checkbox>-->
   </form>
 </div>
 
 <div mat-dialog-actions>
   <button mat-button (click)="onCancel()">Cancel</button>
-  <button mat-button [disabled]="form.invalid" type="submit">Save</button>
+  <button mat-button [disabled]="form.invalid" (click)="onSave()">Save</button>
 </div>

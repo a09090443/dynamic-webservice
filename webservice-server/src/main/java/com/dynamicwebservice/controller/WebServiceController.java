@@ -5,8 +5,9 @@ import com.dynamicwebservice.dto.MockResponseRequest;
 import com.dynamicwebservice.dto.WebServiceRequest;
 import com.dynamicwebservice.service.DynamicWebService;
 import com.zipe.annotation.ResponseResultBody;
+import com.zipe.dto.Result;
+import com.zipe.enums.ResultStatus;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -61,7 +62,7 @@ public class WebServiceController {
         return ResponseEntity.ok().body("Success");
     }
 
-    public ResponseEntity<String> updateWebService(@RequestBody WebServiceRequest request) throws MalformedURLException, ClassNotFoundException {
+    public ResponseEntity<String> updateWebService(@RequestBody WebServiceRequest request) {
         dynamicWebService.updateWebService(request);
         return ResponseEntity.ok().body("Success");
     }
@@ -73,16 +74,21 @@ public class WebServiceController {
     }
 
     @PostMapping("/uploadJarFile")
-    public ResponseEntity<String> uploadJarFile(@RequestParam("file") MultipartFile file) {
+    public Result<String> uploadJarFile(@RequestParam("file") MultipartFile file) {
         try {
+            // 檢查檔案是否為空或不是以 .jar 結尾
             if (file.isEmpty() || !Objects.requireNonNull(file.getOriginalFilename()).endsWith(".jar")) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Please select a file to upload.");
+                return Result.failure(ResultStatus.BAD_REQUEST, "Please select a .jar file to upload.");
             }
 
+            // 執行實際的檔案上傳操作，這裡假設使用 dynamicWebService 來處理上傳
             String newFileName = dynamicWebService.uploadJarFile(file.getInputStream());
-            return ResponseEntity.ok().body("File uploaded successfully: " + newFileName);
+
+            // 返回成功上傳的訊息和新檔案名稱
+            return Result.success(newFileName);
         } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to upload file: " + e.getMessage());
+            // 如果發生 IO 錯誤，返回伺服器內部錯誤訊息
+            return Result.failure(ResultStatus.INTERNAL_SERVER_ERROR, "Failed to upload file: " + e.getMessage());
         }
     }
 }

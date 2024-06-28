@@ -13,9 +13,10 @@ import {MatTableDataSource, MatTableModule} from "@angular/material/table";
 import {MatSort, MatSortModule} from "@angular/material/sort";
 import {MatButtonModule} from "@angular/material/button";
 import {MatPaginator, MatPaginatorModule} from "@angular/material/paginator";
-import {HttpClient, HttpClientModule} from "@angular/common/http";
+import {HttpClientModule} from "@angular/common/http";
 import {Endpoint} from "../model/endpoint";
 import {EndpointFormComponent} from "../endpoint-form/endpoint-form.component";
+import {EndpointService} from "../service/endpoint.service";
 
 const COLUMNS_SCHEMA = [
   {
@@ -95,20 +96,25 @@ export class EndpointComponent implements OnInit, AfterViewInit {
 
   selection = new SelectionModel<Endpoint[]>(true, []);
 
-  constructor(private http: HttpClient,
-              public dialog: MatDialog) {
+  constructor(public dialog: MatDialog,
+              private endpointService: EndpointService) {
   }
 
   ngOnInit(): void {
-    this.fetchData();
+    this.fetchDataFromService();
   }
 
-  fetchData(): void {
-    this.http.get('http://localhost:8080/mockwebservice/ws/getEndpoints').subscribe(
-      (response: any) => {
-        this.dataSource = new MatTableDataSource(response);
+  fetchDataFromService(): void {
+    this.endpointService.fetchData().then(
+      (data: any) => {
+        console.log('Fetched data:', data);
+        this.dataSource = new MatTableDataSource(data);
         this.dataSource.paginator = this.paginator;
         this.dataSource.sort = this.dataSort;
+      },
+      (error) => {
+        console.error('Error fetching data:', error);
+        // 处理错误情况
       }
     );
   }

@@ -14,9 +14,9 @@ import {Endpoint} from "../model/endpoint";
 import {MatCheckbox} from "@angular/material/checkbox";
 import {MatIcon} from "@angular/material/icon";
 import {MatButton, MatIconButton} from "@angular/material/button";
+import {EndpointService} from "../service/endpoint.service";
 
 @Component({
-  selector: 'app-endpoint-form',
   standalone: true,
   imports: [
     ReactiveFormsModule,
@@ -37,11 +37,13 @@ import {MatButton, MatIconButton} from "@angular/material/button";
 export class EndpointFormComponent {
   form!: FormGroup;
   isEditMode: boolean;
+  jarFileName: string | null = null;
 
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: Endpoint,
     private fb: FormBuilder,
-    private dialogRef: MatDialogRef<EndpointFormComponent>
+    private dialogRef: MatDialogRef<EndpointFormComponent>,
+    private endpointService: EndpointService
   ) {
     this.isEditMode = !!data; // 判断是否为编辑模式
     this.initializeForm(data || {} as Endpoint); // 初始化表单
@@ -63,10 +65,11 @@ export class EndpointFormComponent {
       publishUrl: [data?.publishUrl || defaultData.publishUrl, Validators.required],
       beanName: [data?.beanName || defaultData.beanName, Validators.required],
       classPath: [data?.classPath || defaultData.classPath, Validators.required],
-      jarFileName: [data?.jarFileName || defaultData.jarFileName],
+      // jarFileName: [data?.jarFileName || defaultData.jarFileName],
       file: [defaultData.file],
       isActive: [data?.isActive || defaultData.isActive],
     });
+    this.jarFileName = data?.jarFileName || defaultData.jarFileName;
   }
 
   onSave(): void {
@@ -97,5 +100,20 @@ export class EndpointFormComponent {
 
   removeFile(): void {
     this.form.get('file')!.setValue(null);
+  }
+
+  async uploadFile() {
+    const file = this.form.get('file')?.value;
+    if (file) {
+      try {
+        const responseData = await this.endpointService.uploadFile(file);
+        this.jarFileName = responseData;
+        console.log('File uploaded successfully:', responseData);
+      } catch (error) {
+        console.error('Error uploading file:', error);
+      }
+    } else {
+      console.error('No file selected');
+    }
   }
 }
