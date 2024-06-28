@@ -1,6 +1,6 @@
 spring:
   application:
-    name: MockWebservice
+    name: webservice-server
   main:
     allow-bean-definition-overriding: true
   config:
@@ -20,7 +20,7 @@ spring:
 
 server:
   servlet:
-    context-path: /mockwebservice
+    context-path: /webservice-server
   port: 8080
 
 web:
