@@ -1,4 +1,4 @@
-import {Component, Inject} from '@angular/core';
+import {Component, EventEmitter, Inject, Output} from '@angular/core';
 import {
   MAT_DIALOG_DATA,
   MatDialogActions,
@@ -38,6 +38,7 @@ export class EndpointFormComponent {
   form!: FormGroup;
   isEditMode: boolean;
   jarFileName: string | null = null;
+  @Output() endpointSaved = new EventEmitter<Endpoint>();
 
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: Endpoint,
@@ -51,7 +52,6 @@ export class EndpointFormComponent {
 
   private initializeForm(data: Endpoint): void {
     const defaultData: Endpoint = {
-      rowId: '',
       publishUrl: '',
       beanName: '',
       classPath: '',
@@ -63,7 +63,6 @@ export class EndpointFormComponent {
     this.jarFileName = data?.jarFileName || defaultData.jarFileName;
 
     this.form = this.fb.group({
-      rowId: [data?.rowId || defaultData.rowId],
       publishUrl: [data?.publishUrl || defaultData.publishUrl, Validators.required],
       beanName: [data?.beanName || defaultData.beanName, Validators.required],
       classPath: [data?.classPath || defaultData.classPath, Validators.required],
@@ -82,6 +81,7 @@ export class EndpointFormComponent {
       this.endpointService.saveFormData(formData).then(
         (response: any) => {
           console.log('Fetched data:', response.data);
+          this.endpointSaved.emit(response.data);
         },
         (error) => {
           console.error('Error fetching data:', error);

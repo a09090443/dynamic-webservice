@@ -21,11 +21,6 @@ import {MatSlideToggle} from "@angular/material/slide-toggle";
 
 const COLUMNS_SCHEMA = [
   {
-    key: 'rowId',
-    type: 'text',
-    label: '編號',
-  },
-  {
     key: 'publishUrl',
     type: 'text',
     label: '發布名稱',
@@ -92,11 +87,11 @@ export class EndpointComponent implements OnInit, AfterViewInit {
   displayedColumns: string[] = COLUMNS_SCHEMA.map((col) => col.key);
   columnsSchema: any = COLUMNS_SCHEMA;
 
-  dataSource: MatTableDataSource<Endpoint[]> = new MatTableDataSource<Endpoint[]>();
+  dataSource: MatTableDataSource<Endpoint> = new MatTableDataSource<Endpoint>();
   @ViewChild(MatSort) dataSort: MatSort = new MatSort();
   @ViewChild(MatPaginator) paginator: MatPaginator = <MatPaginator>{};
 
-  selection = new SelectionModel<Endpoint[]>(true, []);
+  selection = new SelectionModel<Endpoint>(true, []);
 
   constructor(public dialog: MatDialog,
               private endpointService: EndpointService) {
@@ -110,13 +105,13 @@ export class EndpointComponent implements OnInit, AfterViewInit {
     this.endpointService.fetchData().then(
       (response: any) => {
         console.log('Fetched data:', response.data);
-        this.dataSource = new MatTableDataSource(response.data);
+        this.dataSource = new MatTableDataSource<Endpoint>(response.data);
         this.dataSource.paginator = this.paginator;
         this.dataSource.sort = this.dataSort;
       },
       (error) => {
         console.error('Error fetching data:', error);
-        // 处理错误情况
+        // Handle error
       }
     );
   }
@@ -171,10 +166,17 @@ export class EndpointComponent implements OnInit, AfterViewInit {
   }
 
   openDialog(row?: Endpoint) {
-    this.dialog.open(EndpointFormComponent, {
+    const dialogRef = this.dialog.open(EndpointFormComponent, {
       width: '600px',
       disableClose: true,
       data: row,
     });
+    dialogRef.componentInstance.endpointSaved.subscribe((newEndpoint: Endpoint) => {
+      this.addRow(newEndpoint);
+    });
+  }
+
+  addRow(newEndpoint: Endpoint) {
+    this.dataSource.data = [newEndpoint, ...this.dataSource.data];
   }
 }
