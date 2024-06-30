@@ -20,7 +20,6 @@ public interface DynamicWebService {
     void enabledWebService(String publishUrl) throws MalformedURLException, ClassNotFoundException, FileNotFoundException;
     void disabledWebService(String publicUrl, Boolean isDeleted) throws Exception;
     void removeWebService(String publishUrl) throws Exception;
-    void updateWebService(WebServiceRequest request);
     void addMockResponse(MockResponseRequest request);
     JarFileResponse uploadJarFile(InputStream inputStream) throws IOException;
 }

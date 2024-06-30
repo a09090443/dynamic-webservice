@@ -21,6 +21,11 @@ import {MatSlideToggle} from "@angular/material/slide-toggle";
 
 const COLUMNS_SCHEMA = [
   {
+    key: 'checkbox',
+    type: '',
+    label: '',
+  },
+  {
     key: 'publishUrl',
     type: 'text',
     label: '發布名稱',
@@ -126,19 +131,19 @@ export class EndpointComponent implements OnInit, AfterViewInit {
     this.dataSource.sort = this.dataSort;
   }
 
-  public isAllSelected() {
+  isAllSelected() {
     const numSelected = this.selection.selected.length;
     const numRows = this.dataSource.data.length;
     return numSelected === numRows;
   }
 
-  public masterToggle() {
+  masterToggle() {
     this.isAllSelected() ?
       this.selection.clear() :
       this.dataSource.data.forEach(data => this.selection.select(data));
   }
 
-  public checkboxLabel(row?: any): string {
+  checkboxLabel(row?: any): string {
     return (!row)
       ? `${this.isAllSelected() ? 'select' : 'deselect'} all`
       : `${this.selection.isSelected(row) ? 'deselect' : 'select'} row ${row.position + 1}`;

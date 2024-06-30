@@ -6,7 +6,7 @@ import {
   MatDialogRef,
   MatDialogTitle
 } from "@angular/material/dialog";
-import {NgIf} from "@angular/common";
+import {NgClass, NgIf} from "@angular/common";
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from "@angular/forms";
 import {MatInputModule} from '@angular/material/input';
@@ -29,7 +29,8 @@ import {EndpointService} from "../service/endpoint.service";
     MatButton,
     MatDialogTitle,
     MatDialogContent,
-    MatFormFieldModule
+    MatFormFieldModule,
+    NgClass
   ],
   templateUrl: './endpoint-form.component.html',
   styleUrl: './endpoint-form.component.css'
@@ -38,6 +39,9 @@ export class EndpointFormComponent {
   form!: FormGroup;
   isEditMode: boolean;
   jarFileName: string | null = null;
+  message: string | null = null;
+  messageType: 'success' | 'error' | null = null;
+
   @Output() endpointSaved = new EventEmitter<Endpoint>();
 
   constructor(
@@ -74,6 +78,11 @@ export class EndpointFormComponent {
 
   onSave(): void {
     if (this.form.valid) {
+      if (!this.jarFileName) {
+        this.messageType = 'error';
+        this.message = 'Please upload the JAR file!';
+        return;
+      }
       console.log('Form data:', this.form.value);
       // this.dialogRef.close(this.form.value);
       // Assuming you want to send the entire form value to the server
@@ -81,11 +90,14 @@ export class EndpointFormComponent {
       this.endpointService.saveFormData(formData).then(
         (response: any) => {
           console.log('Fetched data:', response.data);
+          this.message = 'Endpoint updated successfully!';
+          this.messageType = 'success';
           this.endpointSaved.emit(response.data);
         },
         (error) => {
-          console.error('Error fetching data:', error);
-          // 处理错误情况
+          // console.error('Error fetching data:', error);
+          this.message = 'Failed to update endpoint!';
+          this.messageType = 'error';
         }
       );
     } else {

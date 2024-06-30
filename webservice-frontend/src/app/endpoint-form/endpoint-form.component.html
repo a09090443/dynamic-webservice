@@ -38,6 +38,10 @@
       </button>
       <button mat-button (click)="uploadFile()">Upload</button> <!-- 新增的上傳按鈕 -->
     </div>
+
+    <div *ngIf="message" [ngClass]="messageType === 'success' ? 'success-message' : 'error-message'">
+      {{ message }}
+    </div>
 <!--    <mat-checkbox formControlName="isActive">Active</mat-checkbox>-->
   </form>
 </div>

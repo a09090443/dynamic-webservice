@@ -18,6 +18,10 @@ import com.dynamicwebservice.repository.MockResponseRepository;
 import com.dynamicwebservice.service.DynamicWebService;
 import com.dynamicwebservice.util.WebServiceHandler;
 import com.zipe.enums.ResourceEnum;
+import jakarta.persistence.EntityExistsException;
+import jakarta.persistence.OptimisticLockException;
+import jakarta.persistence.PersistenceException;
+import jakarta.transaction.TransactionRequiredException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.cxf.Bus;
 import org.springframework.beans.BeanUtils;
@@ -36,6 +40,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
@@ -106,30 +111,33 @@ public class DynamicWebServiceImpl implements DynamicWebService {
 
     @Override
     public void saveWebService(EndpointDTO endpointDTO) throws FileNotFoundException {
+
+        EndpointEntity endpointEntity = new EndpointEntity();
+        endpointEntity.setPublishUrl(endpointDTO.getPublishUrl());
+        endpointEntity.setClassPath(endpointDTO.getClassPath());
+        endpointEntity.setBeanName(endpointDTO.getBeanName());
+        endpointEntity.setIsActive(Boolean.FALSE);
+        endpointEntity.setJarFileId(endpointDTO.getJarFileId());
+
+        JarFileEntity jarFileEntity = jarFileRepository.findById(endpointDTO.getJarFileId()).orElseThrow(() -> new FileNotFoundException("找不到對應的 Jar 檔案"));
+
+        jarFileEntity.setStatus(JarFileStatus.ACTIVE);
         try {
-
-            EndpointEntity endpointEntity = new EndpointEntity();
-            endpointEntity.setPublishUrl(endpointDTO.getPublishUrl());
-            endpointEntity.setClassPath(endpointDTO.getClassPath());
-            endpointEntity.setBeanName(endpointDTO.getBeanName());
-            endpointEntity.setIsActive(Boolean.FALSE);
-            endpointEntity.setJarFileId(endpointDTO.getJarFileId());
-
-            JarFileEntity jarFileEntity = jarFileRepository.findById(endpointDTO.getJarFileId()).orElseThrow(() -> new FileNotFoundException("找不到對應的 Jar 檔案"));
-            jarFileEntity.setStatus(JarFileStatus.ACTIVE);
             jarFileRepository.save(jarFileEntity);
 
             endpointRepository.save(endpointEntity);
-            endpointDTO.setJarFileName(jarFileEntity.getName());
-        } catch (Exception e) {
-            log.error("註冊 Web Service 失敗", e);
-            throw e;
+        } catch (EntityExistsException e) {
+            // 處理實體已經存在的異常
+            throw new EntityExistsException("實體已經存在：" + e.getMessage());
+        } catch (OptimisticLockException e) {
+            // 處理樂觀鎖定失敗的異常
+            throw new OptimisticLockException("樂觀鎖定失敗：" + e.getMessage());
+        } catch (PersistenceException e) {
+            // 處理其他持久化異常
+            throw new PersistenceException("持久化操作失敗：" + e.getMessage());
         }
-    }
 
-    @Override
-    public void updateWebService(WebServiceRequest request) {
-
+        endpointDTO.setJarFileName(jarFileEntity.getName());
     }
 
     @Override
@@ -173,16 +181,23 @@ public class DynamicWebServiceImpl implements DynamicWebService {
         EndpointEntity endpointEntity = endpointRepository.findById(publishUrl).orElseThrow(() -> new FileNotFoundException("找不到對應的 Web Service"));
         JarFileEntity jarFileEntity = jarFileRepository.findById(endpointEntity.getJarFileId()).orElseThrow(() -> new FileNotFoundException("找不到對應的 Jar 檔案"));
         WebServiceHandler registerWebService = new WebServiceHandler();
+        EndpointDTO endpointDTO = new EndpointDTO();
+        BeanUtils.copyProperties(endpointEntity, endpointDTO);
+        registerWebService.registerWebService(endpointDTO, context, jarFileEntity.getName());
+        endpointEntity.setIsActive(Boolean.TRUE);
         try {
-            EndpointDTO endpointDTO = new EndpointDTO();
-            BeanUtils.copyProperties(endpointEntity, endpointDTO);
-            registerWebService.registerWebService(endpointDTO, context, jarFileEntity.getName());
-            endpointEntity.setIsActive(Boolean.TRUE);
             endpointRepository.save(endpointEntity);
-        } catch (Exception e) {
-            log.error("註冊 Web Service 失敗", e);
-            throw e;
+        } catch (EntityExistsException e) {
+            // 處理實體已經存在的異常
+            throw new EntityExistsException("實體已經存在：" + e.getMessage());
+        } catch (OptimisticLockException e) {
+            // 處理樂觀鎖定失敗的異常
+            throw new OptimisticLockException("樂觀鎖定失敗：" + e.getMessage());
+        } catch (PersistenceException e) {
+            // 處理其他持久化異常
+            throw new PersistenceException("持久化操作失敗：" + e.getMessage());
         }
+
     }
 
     @Override
