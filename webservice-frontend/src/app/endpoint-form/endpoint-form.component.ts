@@ -41,6 +41,7 @@ export class EndpointFormComponent {
   jarFileName: string | null = null;
   message: string | null = null;
   messageType: 'success' | 'error' | null = null;
+  countdown: number | null = null;
 
   @Output() endpointSaved = new EventEmitter<Endpoint>();
 
@@ -93,6 +94,16 @@ export class EndpointFormComponent {
           this.message = 'Endpoint updated successfully!';
           this.messageType = 'success';
           this.endpointSaved.emit(response.data);
+          // 倒數2秒後關閉對話框
+          this.countdown = 2;
+          const countdownInterval = setInterval(() => {
+            if (this.countdown !== null && this.countdown > 0) {
+              this.countdown--;
+            } else {
+              clearInterval(countdownInterval);
+              this.dialogRef.close();
+            }
+          }, 1000);
         },
         (error) => {
           // console.error('Error fetching data:', error);

@@ -1,4 +1,7 @@
 <h1 mat-dialog-title>{{ isEditMode ? 'Edit Data' : 'Add Data' }}</h1>
+<div *ngIf="countdown" class="countdown">
+  關閉視窗倒數 {{ countdown }} 秒...
+</div>
 <div mat-dialog-content>
   <form [formGroup]="form" style="display: flex; flex-direction: column;">
     <mat-form-field class="example-form-field" style="flex: 1;">
