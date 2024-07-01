@@ -52,7 +52,7 @@
           <a [href]="element[column.key]" target="_blank">{{ element[column.key] }}</a>
           </span>
           <span *ngSwitchCase="'boolean'">
-          <mat-slide-toggle [checked]="element[column.key]" [disabled]="true"></mat-slide-toggle>
+          <mat-slide-toggle [checked]="element[column.key]" (change)="onSwitchChange($event, element)"></mat-slide-toggle>
           </span>
           <span *ngSwitchDefault>
           {{ element[column.key] }}

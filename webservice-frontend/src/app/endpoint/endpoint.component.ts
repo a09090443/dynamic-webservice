@@ -184,4 +184,24 @@ export class EndpointComponent implements OnInit, AfterViewInit {
   addRow(newEndpoint: Endpoint) {
     this.dataSource.data = [newEndpoint, ...this.dataSource.data];
   }
+
+  onSwitchChange(event: any, row: Endpoint): void {
+    const confirmation = confirm('你確定要變更此設定嗎？');
+    if (confirmation) {
+      console.log('User confirmed');
+      this.endpointService.switchWebservice(row.publishUrl, event.checked).then(
+        (response: any) => {
+          console.log('Switched web service:', response.data);
+          // Handle success
+        },
+        (error) => {
+          console.error('Error switching web service:', error);
+          // Handle error
+        }
+      );
+    } else {
+      // 使用者點擊取消，回退切換狀態
+      event.source.checked = !event.checked;
+    }
+  }
 }

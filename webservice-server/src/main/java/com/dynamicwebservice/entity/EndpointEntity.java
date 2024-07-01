@@ -11,7 +11,7 @@ import lombok.Setter;
 @Setter
 @Entity
 @Table(name = "ENDPOINT")
-public class EndpointEntity {
+public class EndpointEntity extends BaseEntity{
 
     @Column(name = "PUBLISH_URL", nullable = false)
     @Id

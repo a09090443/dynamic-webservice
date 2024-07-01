@@ -6,6 +6,7 @@ import com.dynamicwebservice.dto.JarFileResponse;
 import com.dynamicwebservice.dto.MockResponseRequest;
 import com.dynamicwebservice.dto.WebServiceRequest;
 import com.dynamicwebservice.service.DynamicWebService;
+import com.dynamicwebservice.util.StringUtil;
 import com.zipe.annotation.ResponseResultBody;
 import com.zipe.dto.Result;
 import com.zipe.enums.ResultStatus;
@@ -16,6 +17,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -73,29 +75,25 @@ public class WebServiceController {
         return Result.success(response);
     }
 
-    @PostMapping("/removeWebService")
+    @GetMapping("/removeWebService")
     public Result<String> removeWebService(@RequestBody WebServiceRequest request) throws Exception {
         dynamicWebService.disabledWebService(request.getPublishUrl(), true);
         return Result.success(StringUtils.EMPTY);
     }
 
-    @PostMapping("/switchWebService")
-    public ResponseEntity<String> switchWebService(@RequestBody WebServiceRequest request) {
-        Optional.ofNullable(request).ifPresent(req -> {
-            if (Boolean.TRUE.equals(req.getIsActive())) {
-                try {
-                    dynamicWebService.enabledWebService(req.getPublishUrl());
-                } catch (MalformedURLException | ClassNotFoundException | FileNotFoundException e) {
-                    log.error("Register web service failed", e);
+    @GetMapping("/switchWebService")
+    public ResponseEntity<String> switchWebService(@RequestParam String publishUrl, @RequestParam Boolean isActive) {
+        if (StringUtils.isNotBlank(publishUrl) && isActive != null) {
+            try {
+                if (isActive) {
+                    dynamicWebService.enabledWebService(publishUrl);
+                } else {
+                    dynamicWebService.disabledWebService(publishUrl, false);
                 }
-            } else {
-                try {
-                    dynamicWebService.disabledWebService(req.getPublishUrl(), false);
-                } catch (Exception e) {
-                    log.error("Remove web service failed", e);
-                }
+            } catch (Exception e) {
+                log.error("Switch endpoint failure, publishUrl:{}, isActive:{}", publishUrl, isActive, e);
             }
-        });
+        }
         return ResponseEntity.ok().body("Success");
     }
 

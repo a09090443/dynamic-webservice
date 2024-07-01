@@ -1,5 +1,5 @@
 import {Injectable} from '@angular/core';
-import {HttpClient, HttpErrorResponse} from "@angular/common/http";
+import {HttpClient, HttpErrorResponse, HttpParams} from "@angular/common/http";
 import {catchError, firstValueFrom, Observable, throwError} from "rxjs";
 
 @Injectable({
@@ -16,6 +16,13 @@ export class EndpointService {
 
   saveFormData(formData: any): Promise<any> {
     return firstValueFrom(this.http.post<any>('http://localhost:8080/webservice-server/ws/registerWebService', formData));
+  }
+
+  async switchWebservice(publishUrl: string, isActive: boolean): Promise<any> {
+    const params = new HttpParams()
+      .set('publishUrl', publishUrl)
+      .set('isActive', isActive.toString());
+    return await firstValueFrom(this.http.get('http://localhost:8080/webservice-server/ws/switchWebService', { params }));
   }
 
   async uploadFile(file: File): Promise<any> {

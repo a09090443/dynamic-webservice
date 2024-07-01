@@ -11,7 +11,7 @@ import lombok.Setter;
 @Setter
 @Entity
 @Table(name = "MOCK_RESPONSE")
-public class MockResponseEntity {
+public class MockResponseEntity extends BaseEntity{
 
         @Column(name = "PUBLISH_URL", nullable = false)
         @Id
