@@ -1,0 +1,224 @@
+import {AfterViewInit, Component, OnInit, ViewChild} from '@angular/core';
+import {DatePipe, NgForOf, NgIf, NgSwitch, NgSwitchCase, NgSwitchDefault} from "@angular/common";
+import {HeaderComponent} from "../header/header.component";
+import {MatButton} from "@angular/material/button";
+import {
+  MatCell,
+  MatCellDef, MatColumnDef,
+  MatHeaderCell, MatHeaderCellDef,
+  MatHeaderRow,
+  MatHeaderRowDef,
+  MatRow,
+  MatRowDef, MatTable, MatTableDataSource
+} from "@angular/material/table";
+import {MatCheckbox} from "@angular/material/checkbox";
+import {MatFormField, MatLabel} from "@angular/material/form-field";
+import {MatInput} from "@angular/material/input";
+import {MatPaginator} from "@angular/material/paginator";
+import {MatSlideToggle} from "@angular/material/slide-toggle";
+import {MatSort, MatSortHeader} from "@angular/material/sort";
+import {Endpoint} from "../model/endpoint";
+import {SelectionModel} from "@angular/cdk/collections";
+import {MatDialog} from "@angular/material/dialog";
+import {EndpointService} from "../service/endpoint.service";
+import {Router} from "@angular/router";
+import {EndpointFormComponent} from "../endpoint-form/endpoint-form.component";
+
+const COLUMNS_SCHEMA = [
+  {
+    key: 'checkbox',
+    type: '',
+    label: '',
+  },
+  {
+    key: 'publishUrl',
+    type: 'text',
+    label: '發布名稱',
+  },
+  {
+    key: 'beanName',
+    type: 'text',
+    label: 'Bean名稱',
+  },
+  {
+    key: 'classPath',
+    type: 'text',
+    label: 'Class路徑',
+  },
+  {
+    key: 'jarFileId',
+    type: 'file',
+    label: 'Jar檔案編號',
+  },
+  {
+    key: 'isActive',
+    type: 'boolean',
+    label: '狀態',
+  },
+  {
+    key: 'isEdit',
+    type: 'isEdit',
+    label: '',
+  },
+];
+
+@Component({
+  selector: 'app-response',
+  standalone: true,
+  imports: [
+    DatePipe,
+    HeaderComponent,
+    MatButton,
+    MatCell,
+    MatCellDef,
+    MatCheckbox,
+    MatFormField,
+    MatHeaderCell,
+    MatHeaderRow,
+    MatHeaderRowDef,
+    MatInput,
+    MatLabel,
+    MatPaginator,
+    MatRow,
+    MatRowDef,
+    MatSlideToggle,
+    MatSort,
+    MatSortHeader,
+    MatTable,
+    NgForOf,
+    NgIf,
+    NgSwitchCase,
+    MatColumnDef,
+    MatHeaderCellDef,
+    NgSwitch,
+    NgSwitchDefault
+  ],
+  templateUrl: './response.component.html',
+  styleUrl: './response.component.css'
+})
+export class ResponseComponent implements OnInit, AfterViewInit{
+
+  pageSize = 10;
+  pageSizeOptions = [10, 50, 100];
+  displayedColumns: string[] = COLUMNS_SCHEMA.map((col) => col.key);
+  columnsSchema: any = COLUMNS_SCHEMA;
+
+  dataSource: MatTableDataSource<Endpoint> = new MatTableDataSource<Endpoint>();
+  @ViewChild(MatSort) dataSort: MatSort = new MatSort();
+  @ViewChild(MatPaginator) paginator: MatPaginator = <MatPaginator>{};
+
+  selection = new SelectionModel<Endpoint>(true, []);
+
+  constructor(public dialog: MatDialog,
+              private endpointService: EndpointService,
+              private router: Router) {
+  }
+
+  ngOnInit(): void {
+    this.fetchDataFromService();
+  }
+
+  fetchDataFromService(): void {
+    this.endpointService.fetchData().then(
+      (response: any) => {
+        console.log('Fetched data:', response.data);
+        this.dataSource = new MatTableDataSource<Endpoint>(response.data);
+        this.dataSource.paginator = this.paginator;
+        this.dataSource.sort = this.dataSort;
+      },
+      (error) => {
+        console.error('Error fetching data:', error);
+        // Handle error
+      }
+    );
+  }
+
+  applyFilter(event: Event) {
+    const filterValue = (event.target as HTMLInputElement).value;
+    this.dataSource.filter = filterValue.trim().toLowerCase();
+  }
+
+  ngAfterViewInit(): void {
+    this.dataSort.disableClear = true;
+    this.dataSource.sort = this.dataSort;
+  }
+
+  isAllSelected() {
+    const numSelected = this.selection.selected.length;
+    const numRows = this.dataSource.data.length;
+    return numSelected === numRows;
+  }
+
+  masterToggle() {
+    this.isAllSelected() ?
+      this.selection.clear() :
+      this.dataSource.data.forEach(data => this.selection.select(data));
+  }
+
+  checkboxLabel(row?: any): string {
+    return (!row)
+      ? `${this.isAllSelected() ? 'select' : 'deselect'} all`
+      : `${this.selection.isSelected(row) ? 'deselect' : 'select'} row ${row.position + 1}`;
+  }
+
+  removeSelectedRows() {
+    const deleteItem = confirm("確定刪除?");
+    if (deleteItem) {
+      this.dataSource.data = this.dataSource.data.filter(item => !this.selection.isSelected(item));
+    }
+    console.log(this.dataSource.data);
+  }
+
+  removeRow(id: number) {
+    const deleteItem = confirm("確定刪除?");
+    if (deleteItem) {
+      const data = this.dataSource.data;
+      data.splice(
+        this.paginator.pageIndex * this.paginator.pageSize + id,
+        1
+      );
+      this.dataSource.data = data;
+    }
+    console.log(id);
+  }
+
+  openEndpointForm(row?: Endpoint) {
+    const dialogRef = this.dialog.open(EndpointFormComponent, {
+      width: '600px',
+      disableClose: true,
+      data: row,
+    });
+    dialogRef.componentInstance.endpointSaved.subscribe((newEndpoint: Endpoint) => {
+      this.addRow(newEndpoint);
+    });
+  }
+
+  responseList(row?: Endpoint) {
+    console.log(row);
+    this.router.navigate(['/response']).then(r => console.log(r));
+  }
+
+  addRow(newEndpoint: Endpoint) {
+    this.dataSource.data = [newEndpoint, ...this.dataSource.data];
+  }
+
+  onSwitchChange(event: any, row: Endpoint): void {
+    const confirmation = confirm('你確定要變更此設定嗎？');
+    if (confirmation) {
+      console.log('User confirmed');
+      this.endpointService.switchWebservice(row.publishUrl, event.checked).then(
+        (response: any) => {
+          console.log('Switched web service:', response.data);
+          // Handle success
+        },
+        (error) => {
+          console.error('Error switching web service:', error);
+          // Handle error
+        }
+      );
+    } else {
+      // 使用者點擊取消，回退切換狀態
+      event.source.checked = !event.checked;
+    }
+  }
+}
