@@ -44,7 +44,7 @@
           <div class="btn-edit" *ngSwitchCase="'isEdit'">
             <button mat-button class="row-btn" (click)="openEndpointForm(element)">編輯</button>&nbsp;&nbsp;
             <button mat-button class="row-btn" (click)="removeRow(n)">刪除</button>&nbsp;&nbsp;
-            <button mat-button class="row-btn" (click)="responseList(n)">回應清單</button>
+            <button mat-button class="row-btn" (click)="responseList(element)">回應清單</button>
           </div>
           <span *ngSwitchCase="'date'">
           {{ element[column.key] | date: 'mediumDate' }}

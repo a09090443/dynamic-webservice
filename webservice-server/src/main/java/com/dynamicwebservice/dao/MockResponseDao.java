@@ -2,7 +2,9 @@ package com.dynamicwebservice.dao;
 
 import com.dynamicwebservice.jdbc.MockResponseJDBC;
 import com.zipe.enums.ResourceEnum;
+import com.zipe.jdbc.criteria.Conditions;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.stereotype.Component;
 
@@ -23,8 +25,14 @@ public class MockResponseDao {
         ResourceEnum resource = ResourceEnum.SQL.getResource(MockResponseJDBC.SQL_SELECT_RESPONSE_CONTENT);
         Map<String, Object> paramMap = new HashMap<>();
         paramMap.put("publishUrl", publishUrl);
-        paramMap.put("method", method);
-        paramMap.put("condition", condition);
+        Conditions conditions = new Conditions();
+        if(StringUtils.isNotBlank(method)) {
+
+        }
+        conditions.equal("mr.METHOD", method);
+        conditions.equal("mr.METHOD", method);
+        conditions.equal("mr.CONDITION", condition);
+        conditions.equal("mr.IS_ACTIVE", "Y");
 
         try {
             return mockResponseJDBC.queryForObject(resource, paramMap, String.class);

@@ -4,12 +4,16 @@ import {HeaderComponent} from "../header/header.component";
 import {MatButton} from "@angular/material/button";
 import {
   MatCell,
-  MatCellDef, MatColumnDef,
-  MatHeaderCell, MatHeaderCellDef,
+  MatCellDef,
+  MatColumnDef,
+  MatHeaderCell,
+  MatHeaderCellDef,
   MatHeaderRow,
   MatHeaderRowDef,
   MatRow,
-  MatRowDef, MatTable, MatTableDataSource
+  MatRowDef,
+  MatTable,
+  MatTableDataSource
 } from "@angular/material/table";
 import {MatCheckbox} from "@angular/material/checkbox";
 import {MatFormField, MatLabel} from "@angular/material/form-field";
@@ -17,12 +21,12 @@ import {MatInput} from "@angular/material/input";
 import {MatPaginator} from "@angular/material/paginator";
 import {MatSlideToggle} from "@angular/material/slide-toggle";
 import {MatSort, MatSortHeader} from "@angular/material/sort";
-import {Endpoint} from "../model/endpoint";
 import {SelectionModel} from "@angular/cdk/collections";
 import {MatDialog} from "@angular/material/dialog";
-import {EndpointService} from "../service/endpoint.service";
-import {Router} from "@angular/router";
+import {ActivatedRoute} from "@angular/router";
 import {EndpointFormComponent} from "../endpoint-form/endpoint-form.component";
+import {Response} from "../model/response";
+import {ResponseService} from "../service/response.service";
 
 const COLUMNS_SCHEMA = [
   {
@@ -36,19 +40,19 @@ const COLUMNS_SCHEMA = [
     label: '發布名稱',
   },
   {
-    key: 'beanName',
+    key: 'method',
     type: 'text',
-    label: 'Bean名稱',
+    label: '呼叫方法名稱',
   },
   {
-    key: 'classPath',
+    key: 'condition',
     type: 'text',
-    label: 'Class路徑',
+    label: 'Response條件',
   },
   {
-    key: 'jarFileId',
-    type: 'file',
-    label: 'Jar檔案編號',
+    key: 'responseContent',
+    type: 'text',
+    label: '回應內容',
   },
   {
     key: 'isActive',
@@ -96,38 +100,40 @@ const COLUMNS_SCHEMA = [
   templateUrl: './response.component.html',
   styleUrl: './response.component.css'
 })
-export class ResponseComponent implements OnInit, AfterViewInit{
+export class ResponseComponent implements OnInit, AfterViewInit {
 
   pageSize = 10;
   pageSizeOptions = [10, 50, 100];
   displayedColumns: string[] = COLUMNS_SCHEMA.map((col) => col.key);
   columnsSchema: any = COLUMNS_SCHEMA;
 
-  dataSource: MatTableDataSource<Endpoint> = new MatTableDataSource<Endpoint>();
+  dataSource: MatTableDataSource<Response> = new MatTableDataSource<Response>();
   @ViewChild(MatSort) dataSort: MatSort = new MatSort();
   @ViewChild(MatPaginator) paginator: MatPaginator = <MatPaginator>{};
 
-  selection = new SelectionModel<Endpoint>(true, []);
+  selection = new SelectionModel<Response>(true, []);
 
   constructor(public dialog: MatDialog,
-              private endpointService: EndpointService,
-              private router: Router) {
+              private responseService: ResponseService,
+              private route: ActivatedRoute ) {
   }
 
   ngOnInit(): void {
-    this.fetchDataFromService();
+    this.route.params.subscribe(params => {
+      const publishUrl = params['publishUrl'];
+      this.fetchDataFromService(publishUrl);
+    });
   }
 
-  fetchDataFromService(): void {
-    this.endpointService.fetchData().then(
+  fetchDataFromService(publishUrl: string): void {
+    this.responseService.fetchData(publishUrl).then(
       (response: any) => {
         console.log('Fetched data:', response.data);
-        this.dataSource = new MatTableDataSource<Endpoint>(response.data);
+        this.dataSource = new MatTableDataSource<Response>(response.data);
         this.dataSource.paginator = this.paginator;
         this.dataSource.sort = this.dataSort;
       },
       (error) => {
-        console.error('Error fetching data:', error);
         // Handle error
       }
     );
@@ -182,31 +188,26 @@ export class ResponseComponent implements OnInit, AfterViewInit{
     console.log(id);
   }
 
-  openEndpointForm(row?: Endpoint) {
+  openEndpointForm(row?: Response) {
     const dialogRef = this.dialog.open(EndpointFormComponent, {
       width: '600px',
       disableClose: true,
       data: row,
     });
-    dialogRef.componentInstance.endpointSaved.subscribe((newEndpoint: Endpoint) => {
+    dialogRef.componentInstance.endpointSaved.subscribe((newEndpoint: Response) => {
       this.addRow(newEndpoint);
     });
   }
 
-  responseList(row?: Endpoint) {
-    console.log(row);
-    this.router.navigate(['/response']).then(r => console.log(r));
+  addRow(newResponse: Response) {
+    this.dataSource.data = [newResponse, ...this.dataSource.data];
   }
 
-  addRow(newEndpoint: Endpoint) {
-    this.dataSource.data = [newEndpoint, ...this.dataSource.data];
-  }
-
-  onSwitchChange(event: any, row: Endpoint): void {
+  onSwitchChange(event: any, row: Response): void {
     const confirmation = confirm('你確定要變更此設定嗎？');
     if (confirmation) {
       console.log('User confirmed');
-      this.endpointService.switchWebservice(row.publishUrl, event.checked).then(
+      this.responseService.switchWebservice(row.publishUrl, event.checked).then(
         (response: any) => {
           console.log('Switched web service:', response.data);
           // Handle success

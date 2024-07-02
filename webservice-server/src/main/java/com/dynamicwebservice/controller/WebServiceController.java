@@ -4,9 +4,9 @@ import com.dynamicwebservice.dto.EndpointDTO;
 import com.dynamicwebservice.dto.EndpointResponse;
 import com.dynamicwebservice.dto.JarFileResponse;
 import com.dynamicwebservice.dto.MockResponseRequest;
+import com.dynamicwebservice.dto.MockResponseResponse;
 import com.dynamicwebservice.dto.WebServiceRequest;
 import com.dynamicwebservice.service.DynamicWebService;
-import com.dynamicwebservice.util.StringUtil;
 import com.zipe.annotation.ResponseResultBody;
 import com.zipe.dto.Result;
 import com.zipe.enums.ResultStatus;
@@ -17,7 +17,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,7 +30,6 @@ import java.net.MalformedURLException;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -51,10 +49,26 @@ public class WebServiceController {
         return Result.success(dynamicWebService.getEndpoints());
     }
 
-    @PostMapping("/getResponseList")
-    public Result<String> getResponseList(@RequestBody MockResponseRequest request) {
+    @PostMapping("/getResponseContent")
+    public Result<String> getResponseContent(@RequestBody MockResponseRequest request) {
+        if (StringUtils.isBlank(request.getPublishUrl())) {
+            return Result.failure(ResultStatus.BAD_REQUEST, "Publish URL is required");
+        } else if (StringUtils.isBlank(request.getMethod())) {
+            return Result.failure(ResultStatus.BAD_REQUEST, "Method is required");
+        } else if (StringUtils.isBlank(request.getCondition())) {
+            return Result.failure(ResultStatus.BAD_REQUEST, "Condition is required");
+        }
         String content = dynamicWebService.getResponseContent(request);
         return Result.success(content);
+    }
+
+    @PostMapping("/getResponseList")
+    public Result<List<MockResponseResponse>> getResponseList(@RequestBody MockResponseRequest request) {
+        if (StringUtils.isBlank(request.getPublishUrl())) {
+            return Result.failure(ResultStatus.BAD_REQUEST);
+        }
+        List<MockResponseResponse> mockResponseResponseList = dynamicWebService.getResponseList(request);
+        return Result.success(mockResponseResponseList);
     }
 
     @PostMapping("/registerWebService")

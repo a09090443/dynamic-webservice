@@ -8,5 +8,6 @@ import java.util.List;
 
 @Repository
 public interface MockResponseRepository extends JpaRepository<MockResponseEntity, String> {
-    List<MockResponseEntity> findByCondition(String condition);
+    MockResponseEntity findByPublishUrlAndMethodAndConditionAndIsActive(String publishUrl, String method, String condition, Boolean isActive);
+    List<MockResponseEntity> findByPublishUrl(String publishUrl);
 }

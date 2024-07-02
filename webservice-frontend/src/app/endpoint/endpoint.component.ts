@@ -183,9 +183,9 @@ export class EndpointComponent implements OnInit, AfterViewInit {
     });
   }
 
-  responseList(row?: Endpoint) {
+  responseList(row: Endpoint) {
     console.log(row);
-    this.router.navigate(['/response']).then(r => console.log(r));
+    this.router.navigate(['/response', { publishUrl: row.publishUrl }]).then(r => console.log(r));
   }
 
   addRow(newEndpoint: Endpoint) {

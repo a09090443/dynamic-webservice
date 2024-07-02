@@ -5,7 +5,7 @@ import com.dynamicwebservice.dto.EndpointDTO;
 import com.dynamicwebservice.dto.EndpointResponse;
 import com.dynamicwebservice.dto.JarFileResponse;
 import com.dynamicwebservice.dto.MockResponseRequest;
-import com.dynamicwebservice.dto.WebServiceRequest;
+import com.dynamicwebservice.dto.MockResponseResponse;
 import com.dynamicwebservice.entity.EndpointEntity;
 import com.dynamicwebservice.entity.JarFileEntity;
 import com.dynamicwebservice.entity.MockResponseEntity;
@@ -21,13 +21,11 @@ import com.zipe.enums.ResourceEnum;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.OptimisticLockException;
 import jakarta.persistence.PersistenceException;
-import jakarta.transaction.TransactionRequiredException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.cxf.Bus;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
-import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.stereotype.Service;
 
 import java.io.FileNotFoundException;
@@ -101,12 +99,22 @@ public class DynamicWebServiceImpl implements DynamicWebService {
 
     @Override
     public String getResponseContent(MockResponseRequest request) {
-        try {
-            return mockResponseDao.findByPrimaryKey(request.getPublishUrl(), request.getMethod(), request.getCondition());
-        } catch (IncorrectResultSizeDataAccessException e) {
-            log.warn("查無對應的 Mock Response 資料");
-            return "";
-        }
+        MockResponseEntity mockResponseEntity = mockResponseRepository.findByPublishUrlAndMethodAndConditionAndIsActive(request.getPublishUrl(), request.getMethod(), request.getCondition(), Boolean.TRUE);
+        return Optional.ofNullable(mockResponseEntity).map(MockResponseEntity::getResponseContent).orElse("");
+    }
+
+    @Override
+    public List<MockResponseResponse> getResponseList(MockResponseRequest request) {
+        List<MockResponseEntity> mockResponseEntity = mockResponseRepository.findByPublishUrl(request.getPublishUrl());
+        return mockResponseEntity.stream().map(mockResponse -> {
+            MockResponseResponse response = new MockResponseResponse();
+            response.setPublishUrl(mockResponse.getPublishUrl());
+            response.setMethod(mockResponse.getMethod());
+            response.setCondition(mockResponse.getCondition());
+            response.setResponseContent(mockResponse.getResponseContent());
+            response.setIsActive(mockResponse.getIsActive());
+            return response;
+        }).toList();
     }
 
     @Override
@@ -129,9 +137,6 @@ public class DynamicWebServiceImpl implements DynamicWebService {
         } catch (EntityExistsException e) {
             // 處理實體已經存在的異常
             throw new EntityExistsException("實體已經存在：" + e.getMessage());
-        } catch (OptimisticLockException e) {
-            // 處理樂觀鎖定失敗的異常
-            throw new OptimisticLockException("樂觀鎖定失敗：" + e.getMessage());
         } catch (PersistenceException e) {
             // 處理其他持久化異常
             throw new PersistenceException("持久化操作失敗：" + e.getMessage());
@@ -147,7 +152,7 @@ public class DynamicWebServiceImpl implements DynamicWebService {
         mockResponseEntity.setMethod(request.getMethod());
         mockResponseEntity.setCondition(request.getCondition());
         mockResponseEntity.setResponseContent(request.getResponseContent());
-        mockResponseEntity.setIsActive(Boolean.TRUE);
+        mockResponseEntity.setIsActive(Boolean.FALSE);
         mockResponseRepository.save(mockResponseEntity);
     }
 

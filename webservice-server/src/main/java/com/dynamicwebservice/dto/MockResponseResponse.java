@@ -1,8 +1,11 @@
 package com.dynamicwebservice.dto;
 
+import lombok.Data;
+
+@Data
 public class MockResponseResponse {
 
-    private String publicUrl;
+    private String publishUrl;
 
     private String method;
 
@@ -10,5 +13,5 @@ public class MockResponseResponse {
 
     private String responseContent;
 
-    private Boolean status;
+    private Boolean isActive;
 }

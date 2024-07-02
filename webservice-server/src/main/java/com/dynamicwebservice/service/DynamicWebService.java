@@ -4,6 +4,7 @@ import com.dynamicwebservice.dto.EndpointDTO;
 import com.dynamicwebservice.dto.EndpointResponse;
 import com.dynamicwebservice.dto.JarFileResponse;
 import com.dynamicwebservice.dto.MockResponseRequest;
+import com.dynamicwebservice.dto.MockResponseResponse;
 import com.dynamicwebservice.dto.WebServiceRequest;
 
 import java.io.FileNotFoundException;
@@ -16,6 +17,7 @@ import java.util.List;
 public interface DynamicWebService {
     List<EndpointResponse> getEndpoints() throws SQLException;
     String getResponseContent(MockResponseRequest request);
+    List<MockResponseResponse> getResponseList(MockResponseRequest request);
     void saveWebService(EndpointDTO endpointDTO) throws FileNotFoundException;
     void enabledWebService(String publishUrl) throws MalformedURLException, ClassNotFoundException, FileNotFoundException;
     void disabledWebService(String publicUrl, Boolean isDeleted) throws Exception;
