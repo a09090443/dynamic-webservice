@@ -2,7 +2,7 @@
 <h2>Endpoint 自訂回應清單</h2>
 <article class="table-header">
   <button class="del-btn" mat-button (click)="removeSelectedRows()">移除Response</button>&nbsp;&nbsp;
-  <button class="add-btn" mat-button (click)="openEndpointForm()">新增Response</button>
+  <button class="add-btn" mat-button (click)="openResponseForm()">新增Response</button>
 </article>
 <div class="mat-elevation-z8">
   <mat-form-field>
@@ -42,7 +42,7 @@
       <td mat-cell *matCellDef="let element; let n = index;">
         <div [ngSwitch]="column.type" *ngIf="!element.isEdit">
           <div class="btn-edit" *ngSwitchCase="'isEdit'">
-            <button mat-button class="row-btn" (click)="openEndpointForm(element)">編輯</button>&nbsp;&nbsp;
+            <button mat-button class="row-btn" (click)="openResponseForm(element)">編輯</button>&nbsp;&nbsp;
             <button mat-button class="row-btn" (click)="removeRow(n)">刪除</button>
           </div>
           <span *ngSwitchCase="'date'">

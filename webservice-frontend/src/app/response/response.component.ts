@@ -1,7 +1,7 @@
 import {AfterViewInit, Component, OnInit, ViewChild} from '@angular/core';
-import {DatePipe, NgForOf, NgIf, NgSwitch, NgSwitchCase, NgSwitchDefault} from "@angular/common";
+import {DatePipe, NgClass, NgForOf, NgIf, NgSwitch, NgSwitchCase, NgSwitchDefault} from "@angular/common";
 import {HeaderComponent} from "../header/header.component";
-import {MatButton} from "@angular/material/button";
+import {MatButton, MatButtonModule, MatIconButton} from "@angular/material/button";
 import {
   MatCell,
   MatCellDef,
@@ -13,20 +13,27 @@ import {
   MatRow,
   MatRowDef,
   MatTable,
-  MatTableDataSource
+  MatTableDataSource, MatTableModule
 } from "@angular/material/table";
 import {MatCheckbox} from "@angular/material/checkbox";
-import {MatFormField, MatLabel} from "@angular/material/form-field";
-import {MatInput} from "@angular/material/input";
-import {MatPaginator} from "@angular/material/paginator";
+import {MatFormField, MatFormFieldModule, MatLabel} from "@angular/material/form-field";
+import {MatInput, MatInputModule} from "@angular/material/input";
+import {MatPaginator, MatPaginatorModule} from "@angular/material/paginator";
 import {MatSlideToggle} from "@angular/material/slide-toggle";
-import {MatSort, MatSortHeader} from "@angular/material/sort";
+import {MatSort, MatSortHeader, MatSortModule} from "@angular/material/sort";
 import {SelectionModel} from "@angular/cdk/collections";
-import {MatDialog} from "@angular/material/dialog";
+import {MatDialog, MatDialogActions, MatDialogContent, MatDialogModule, MatDialogTitle} from "@angular/material/dialog";
 import {ActivatedRoute} from "@angular/router";
 import {EndpointFormComponent} from "../endpoint-form/endpoint-form.component";
 import {Response} from "../model/response";
 import {ResponseService} from "../service/response.service";
+import {ResponseFormComponent} from "../response-form/response-form.component";
+import {FormsModule, ReactiveFormsModule} from "@angular/forms";
+import {MatIcon} from "@angular/material/icon";
+import {MatCardModule} from "@angular/material/card";
+import {MatDatepickerModule} from "@angular/material/datepicker";
+import {MatNativeDateModule} from "@angular/material/core";
+import {HttpClientModule} from "@angular/common/http";
 
 const COLUMNS_SCHEMA = [
   {
@@ -70,32 +77,26 @@ const COLUMNS_SCHEMA = [
   selector: 'app-response',
   standalone: true,
   imports: [
-    DatePipe,
-    HeaderComponent,
-    MatButton,
-    MatCell,
-    MatCellDef,
+    MatTableModule,
+    MatCardModule,
+    MatSortModule,
+    MatButtonModule,
+    MatPaginatorModule,
+    MatInputModule,
     MatCheckbox,
-    MatFormField,
-    MatHeaderCell,
-    MatHeaderRow,
-    MatHeaderRowDef,
-    MatInput,
-    MatLabel,
-    MatPaginator,
-    MatRow,
-    MatRowDef,
-    MatSlideToggle,
-    MatSort,
-    MatSortHeader,
-    MatTable,
-    NgForOf,
+    FormsModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
+    MatDialogModule,
+    NgSwitch,
     NgIf,
     NgSwitchCase,
-    MatColumnDef,
-    MatHeaderCellDef,
-    NgSwitch,
-    NgSwitchDefault
+    DatePipe,
+    NgSwitchDefault,
+    NgForOf,
+    HeaderComponent,
+    HttpClientModule,
+    MatSlideToggle
   ],
   templateUrl: './response.component.html',
   styleUrl: './response.component.css'
@@ -188,14 +189,14 @@ export class ResponseComponent implements OnInit, AfterViewInit {
     console.log(id);
   }
 
-  openEndpointForm(row?: Response) {
-    const dialogRef = this.dialog.open(EndpointFormComponent, {
+  openResponseForm(row?: Response) {
+    const dialogRef = this.dialog.open(ResponseFormComponent, {
       width: '600px',
       disableClose: true,
       data: row,
     });
-    dialogRef.componentInstance.endpointSaved.subscribe((newEndpoint: Response) => {
-      this.addRow(newEndpoint);
+    dialogRef.componentInstance.responseSaved.subscribe((newResponse: Response) => {
+      this.addRow(newResponse);
     });
   }
 
@@ -207,7 +208,7 @@ export class ResponseComponent implements OnInit, AfterViewInit {
     const confirmation = confirm('你確定要變更此設定嗎？');
     if (confirmation) {
       console.log('User confirmed');
-      this.responseService.switchWebservice(row.publishUrl, event.checked).then(
+      this.responseService.switchResponse(row.publishUrl, event.checked).then(
         (response: any) => {
           console.log('Switched web service:', response.data);
           // Handle success
