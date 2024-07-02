@@ -111,9 +111,9 @@ public class WebServiceController {
         return ResponseEntity.ok().body("Success");
     }
 
-    @PostMapping("/addMockResponse")
-    public Result<String> addMockResponse(@RequestBody MockResponseRequest request) {
-        dynamicWebService.addMockResponse(request);
+    @PostMapping("/saveMockResponse")
+    public Result<String> saveMockResponse(@RequestBody MockResponseRequest request) {
+        dynamicWebService.saveMockResponse(request);
         return Result.success("Success");
     }
 

@@ -107,6 +107,7 @@ export class ResponseComponent implements OnInit, AfterViewInit {
   pageSizeOptions = [10, 50, 100];
   displayedColumns: string[] = COLUMNS_SCHEMA.map((col) => col.key);
   columnsSchema: any = COLUMNS_SCHEMA;
+  publishUrl: string = '';
 
   dataSource: MatTableDataSource<Response> = new MatTableDataSource<Response>();
   @ViewChild(MatSort) dataSort: MatSort = new MatSort();
@@ -127,6 +128,7 @@ export class ResponseComponent implements OnInit, AfterViewInit {
   }
 
   fetchDataFromService(publishUrl: string): void {
+    this.publishUrl = publishUrl;
     this.responseService.fetchData(publishUrl).then(
       (response: any) => {
         console.log('Fetched data:', response.data);
@@ -189,11 +191,19 @@ export class ResponseComponent implements OnInit, AfterViewInit {
     console.log(id);
   }
 
-  openResponseForm(row?: Response) {
+  openResponseForm(input?: Response | string) {
+    let dialogData: { row?: Response; publishUrl?: string } = {};
+
+    if (typeof input === 'string') {
+      dialogData.publishUrl = input;
+    } else if (input && typeof input === 'object') {
+      dialogData.row = input;
+    }
+
     const dialogRef = this.dialog.open(ResponseFormComponent, {
       width: '600px',
       disableClose: true,
-      data: row,
+      data: dialogData,
     });
     dialogRef.componentInstance.responseSaved.subscribe((newResponse: Response) => {
       this.addRow(newResponse);

@@ -1,8 +1,8 @@
 package com.dynamicwebservice.entity;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
@@ -13,17 +13,10 @@ import lombok.Setter;
 @Table(name = "MOCK_RESPONSE")
 public class MockResponseEntity extends BaseEntity{
 
-        @Column(name = "PUBLISH_URL", nullable = false)
-        @Id
-        private String publishUrl;
+        @EmbeddedId
+        private MockResponseId id = new MockResponseId();
 
-        @Column(name = "METHOD", nullable = false)
-        private String method;
-
-        @Column(name = "CONDITION", nullable = false)
-        private String condition;
-
-        @Column(name = "RESPONSE_CONTENT", nullable = false)
+        @Column(name = "RESPONSE_CONTENT")
         private String responseContent;
 
         @Column(name = "IS_ACTIVE", nullable = false)

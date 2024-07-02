@@ -5,7 +5,6 @@ import com.dynamicwebservice.dto.EndpointResponse;
 import com.dynamicwebservice.dto.JarFileResponse;
 import com.dynamicwebservice.dto.MockResponseRequest;
 import com.dynamicwebservice.dto.MockResponseResponse;
-import com.dynamicwebservice.dto.WebServiceRequest;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -22,6 +21,6 @@ public interface DynamicWebService {
     void enabledWebService(String publishUrl) throws MalformedURLException, ClassNotFoundException, FileNotFoundException;
     void disabledWebService(String publicUrl, Boolean isDeleted) throws Exception;
     void removeWebService(String publishUrl) throws Exception;
-    void addMockResponse(MockResponseRequest request);
+    void saveMockResponse(MockResponseRequest request);
     JarFileResponse uploadJarFile(InputStream inputStream) throws IOException;
 }

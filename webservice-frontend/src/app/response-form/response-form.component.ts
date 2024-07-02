@@ -1,10 +1,10 @@
-import {Component, EventEmitter, Inject, Output} from '@angular/core';
+import {Component, EventEmitter, Inject, OnInit, Output} from '@angular/core';
 import {NgClass, NgIf} from "@angular/common";
-import {MatFormField, MatFormFieldModule, MatSuffix} from "@angular/material/form-field";
+import {MatFormFieldModule} from "@angular/material/form-field";
 import {MatIcon} from "@angular/material/icon";
 import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from "@angular/forms";
 import {MatButton, MatIconButton} from "@angular/material/button";
-import {MatInput, MatInputModule} from "@angular/material/input";
+import {MatInputModule} from "@angular/material/input";
 import {
   MAT_DIALOG_DATA,
   MatDialogActions,
@@ -36,13 +36,14 @@ import {MatCheckbox} from "@angular/material/checkbox";
   templateUrl: './response-form.component.html',
   styleUrl: './response-form.component.css'
 })
-export class ResponseFormComponent {
+export class ResponseFormComponent implements OnInit{
   form!: FormGroup;
   isEditMode: boolean;
-  jarFileName: string | null = null;
+  publishUrl: string | null = null;
   message: string | null = null;
   messageType: 'success' | 'error' | null = null;
   countdown: number | null = null;
+  isResponseContentValidJson = true;
 
   @Output() responseSaved = new EventEmitter<Response>();
 
@@ -57,6 +58,7 @@ export class ResponseFormComponent {
   }
 
   private initializeForm(data: Response): void {
+    this.publishUrl = data.publishUrl;
     const defaultData: Response = {
       publishUrl: '',
       method: '',
@@ -75,15 +77,9 @@ export class ResponseFormComponent {
 
   onSave(): void {
     if (this.form.valid) {
-      if (!this.jarFileName) {
-        this.messageType = 'error';
-        this.message = 'Please upload the JAR file!';
-        return;
-      }
       console.log('Form data:', this.form.value);
-      // this.dialogRef.close(this.form.value);
-      // Assuming you want to send the entire form value to the server
       const formData = this.form.value;
+      // formData.publishUrl = this.publishUrl;
       this.responseService.saveFormData(formData).then(
         (response: any) => {
           console.log('Fetched data:', response.data);
@@ -120,4 +116,25 @@ export class ResponseFormComponent {
     this.form.get(fieldName)!.setValue('');
   }
 
+  ngOnInit(): void {
+    this.form = this.fb.group({
+      publishUrl: this.publishUrl,
+      method: [''],
+      condition: [''],
+      responseContent: ['']
+    });
+
+    this.form.get('responseContent')!.valueChanges.subscribe(value => {
+      this.isResponseContentValidJson = this.isValidJson(value);
+    });
+  }
+
+  isValidJson(str: string): boolean {
+    try {
+      JSON.parse(str);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
 }

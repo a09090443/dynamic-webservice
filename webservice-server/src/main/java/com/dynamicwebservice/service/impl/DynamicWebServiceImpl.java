@@ -99,18 +99,18 @@ public class DynamicWebServiceImpl implements DynamicWebService {
 
     @Override
     public String getResponseContent(MockResponseRequest request) {
-        MockResponseEntity mockResponseEntity = mockResponseRepository.findByPublishUrlAndMethodAndConditionAndIsActive(request.getPublishUrl(), request.getMethod(), request.getCondition(), Boolean.TRUE);
+        MockResponseEntity mockResponseEntity = mockResponseRepository.findByIdPublishUrlAndIdMethodAndIdConditionAndIsActive(request.getPublishUrl(), request.getMethod(), request.getCondition(), Boolean.TRUE);
         return Optional.ofNullable(mockResponseEntity).map(MockResponseEntity::getResponseContent).orElse("");
     }
 
     @Override
     public List<MockResponseResponse> getResponseList(MockResponseRequest request) {
-        List<MockResponseEntity> mockResponseEntity = mockResponseRepository.findByPublishUrl(request.getPublishUrl());
+        List<MockResponseEntity> mockResponseEntity = mockResponseRepository.findByIdPublishUrl(request.getPublishUrl());
         return mockResponseEntity.stream().map(mockResponse -> {
             MockResponseResponse response = new MockResponseResponse();
-            response.setPublishUrl(mockResponse.getPublishUrl());
-            response.setMethod(mockResponse.getMethod());
-            response.setCondition(mockResponse.getCondition());
+            response.setPublishUrl(mockResponse.getId().getPublishUrl());
+            response.setMethod(mockResponse.getId().getMethod());
+            response.setCondition(mockResponse.getId().getCondition());
             response.setResponseContent(mockResponse.getResponseContent());
             response.setIsActive(mockResponse.getIsActive());
             return response;
@@ -146,11 +146,11 @@ public class DynamicWebServiceImpl implements DynamicWebService {
     }
 
     @Override
-    public void addMockResponse(MockResponseRequest request) {
+    public void saveMockResponse(MockResponseRequest request) {
         MockResponseEntity mockResponseEntity = new MockResponseEntity();
-        mockResponseEntity.setPublishUrl(request.getPublishUrl());
-        mockResponseEntity.setMethod(request.getMethod());
-        mockResponseEntity.setCondition(request.getCondition());
+        mockResponseEntity.getId().setPublishUrl(request.getPublishUrl());
+        mockResponseEntity.getId().setMethod(request.getMethod());
+        mockResponseEntity.getId().setCondition(request.getCondition());
         mockResponseEntity.setResponseContent(request.getResponseContent());
         mockResponseEntity.setIsActive(Boolean.FALSE);
         mockResponseRepository.save(mockResponseEntity);
