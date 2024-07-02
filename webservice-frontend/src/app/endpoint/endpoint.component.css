@@ -39,21 +39,6 @@ table {
   margin-bottom: 10px;
 }
 
-.button-add-row {
-  background: #1b9e1b;
-  color: #ffffff;
-}
-
-.button-remove-rows {
-  background: red;
-  color: #ffffff;
-  margin-right: 5px;
-}
-
-.button-remove {
-  color: red;
-}
-
 ::ng-deep .mat-form-field-infix {
   width: 100% !important;
 }
@@ -71,4 +56,149 @@ p {
   margin-bottom: 1em;
   margin-left: 0;
   margin-right: 0;
+}
+
+.add-btn,
+.add-btn:focus {
+  position: relative;
+  z-index: 1;
+  min-width: 180px;
+  border: 2px solid #006000;
+  border-radius: 0;
+  color: #FFFFFF;
+  font-size: 1rem;
+  font-weight: bold;
+  text-align: center;
+  text-decoration: none;
+  text-transform: uppercase;
+  overflow: hidden;
+  text-shadow: 0 0 1px rgba(0, 0, 0, 0.2), 0 1px 0 rgba(0, 0, 0, 0.2);
+  -webkit-transition: all 1s ease;
+  -moz-transition: all 1s ease;
+  -o-transition: all 1s ease;
+  transition: all 1s ease;
+  padding: 10px 20px;
+}
+.add-btn:after {
+  content: "";
+  position: absolute;
+  height: 0%;
+  left: 50%;
+  top: 50%;
+  width: 150%;
+  z-index: -1;
+  background: #006000;
+  -moz-transform: translateX(-50%) translateY(-50%) rotate(-25deg);
+  -ms-transform: translateX(-50%) translateY(-50%) rotate(-25deg);
+  -webkit-transform: translateX(-50%) translateY(-50%) rotate(-25deg);
+  transform: translateX(-50%) translateY(-50%) rotate(-25deg);
+  -webkit-transition: all 0.75s ease 0s;
+  -moz-transition: all 0.75s ease 0s;
+  -o-transition: all 0.75s ease 0s;
+  transition: all 0.75s ease 0s;
+}
+.add-btn:hover {
+  color: #FFFFFF;
+  text-shadow: none;
+}
+.add-btn:hover:after {
+  height: 450%;
+}
+
+.del-btn,
+.del-btn:focus {
+  position: relative;
+  z-index: 1;
+  min-width: 180px;
+  border: 2px solid #FF0000;
+  border-radius: 0;
+  color: #FFFFFF;
+  font-size: 1rem;
+  font-weight: bold;
+  text-align: center;
+  text-decoration: none;
+  text-transform: uppercase;
+  overflow: hidden;
+  text-shadow: 0 0 1px rgba(0, 0, 0, 0.2), 0 1px 0 rgba(0, 0, 0, 0.2);
+  -webkit-transition: all 1s ease;
+  -moz-transition: all 1s ease;
+  -o-transition: all 1s ease;
+  transition: all 1s ease;
+  padding: 10px 20px;
+}
+.del-btn:after {
+  content: "";
+  position: absolute;
+  height: 0%;
+  left: 50%;
+  top: 50%;
+  width: 150%;
+  z-index: -1;
+  background: #FF0000;
+  -moz-transform: translateX(-50%) translateY(-50%) rotate(-25deg);
+  -ms-transform: translateX(-50%) translateY(-50%) rotate(-25deg);
+  -webkit-transform: translateX(-50%) translateY(-50%) rotate(-25deg);
+  transform: translateX(-50%) translateY(-50%) rotate(-25deg);
+  -webkit-transition: all 0.75s ease 0s;
+  -moz-transition: all 0.75s ease 0s;
+  -o-transition: all 0.75s ease 0s;
+  transition: all 0.75s ease 0s;
+}
+.del-btn:hover {
+  color: #FFFFFF;
+  text-shadow: none;
+}
+.del-btn:hover:after {
+  height: 450%;
+}
+
+.row-btn,
+.row-btn:focus {
+  position: relative;
+  min-width: 100px;
+  background: none;
+  border: none;
+  color: #58afd1;
+  font-size: 1rem;
+  font-weight: bold;
+  text-align: center;
+  text-decoration: none;
+  box-shadow: inset 0 0 0 4px #58afd1;
+  transition: color 0.25s 0.0833333333s;
+  padding: 10px 20px;
+}
+.row-btn:before,
+.row-btn:after {
+  content: "";
+  position: absolute;
+  width: 0;
+  height: 0;
+  bottom: 0;
+  right: 0;
+  border: 0 solid transparent;
+  box-sizing: border-box;
+}
+.row-btn:before {
+  border-bottom-width: 4px;
+  border-left-width: 4px;
+}
+.row-btn:after {
+  border-top-width: 4px;
+  border-right-width: 4px;
+}
+.row-btn:hover {
+  color: #642100;
+}
+.row-btn:hover:before,
+.row-btn:hover:after {
+  border-color: #642100;
+  transition: border-color 0s, width 0.25s, height 0.25s;
+  width: 100%;
+  height: 100%;
+}
+.row-btn:hover:before {
+  transition-delay: 0s, 0s, 0.25s;
+}
+.row-btn:hover:after {
+  transition-delay: 0s, 0.25s, 0s;
 }

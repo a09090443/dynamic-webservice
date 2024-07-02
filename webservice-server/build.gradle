@@ -36,6 +36,28 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
+tasks.register('buildAngular', Exec) {
+    workingDir '../webservice-frontend'
+    commandLine '../tools/node-v20.15.0-win-x64/npm.cmd', 'run', 'build', '--', '--configuration', 'production', '--base-href', '/webservice-server/'
+}
+tasks.register('copyAngularBuild', Copy) {
+    dependsOn 'buildAngular'
+    from '../webservice-frontend/dist'
+    into 'src/main/resources/static'
+}
+
+tasks.named('processResources') {
+    dependsOn 'copyAngularBuild'
+}
+
+bootJar {
+    dependsOn 'copyAngularBuild'
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+//    from('src/main/webapp') {
+//        into 'META-INF/resources'
+//    }
+}
+
 tasks.named('test') {
     useJUnitPlatform()
 }

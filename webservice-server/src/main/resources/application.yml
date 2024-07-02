@@ -24,9 +24,6 @@ server:
   port: 8080
 
 web:
-  resource:
-    pathPattern: /static/** # 靜態資源 Uri
-    location: /WEB-INF/static/ # 靜態資源對應目錄，預設是在 /WEB-INF 目錄下
   thymeleaf:
     enable: true # thymeleaf page 開關
     viewNames: html/*, thymeleaf/* # thymeleaf 對應 uri

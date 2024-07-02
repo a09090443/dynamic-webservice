@@ -18,6 +18,7 @@ import {Endpoint} from "../model/endpoint";
 import {EndpointFormComponent} from "../endpoint-form/endpoint-form.component";
 import {EndpointService} from "../service/endpoint.service";
 import {MatSlideToggle} from "@angular/material/slide-toggle";
+import {Router} from "@angular/router";
 
 const COLUMNS_SCHEMA = [
   {
@@ -99,7 +100,8 @@ export class EndpointComponent implements OnInit, AfterViewInit {
   selection = new SelectionModel<Endpoint>(true, []);
 
   constructor(public dialog: MatDialog,
-              private endpointService: EndpointService) {
+              private endpointService: EndpointService,
+              private router: Router) {
   }
 
   ngOnInit(): void {
@@ -170,7 +172,7 @@ export class EndpointComponent implements OnInit, AfterViewInit {
     console.log(id);
   }
 
-  openDialog(row?: Endpoint) {
+  openEndpointForm(row?: Endpoint) {
     const dialogRef = this.dialog.open(EndpointFormComponent, {
       width: '600px',
       disableClose: true,
@@ -179,6 +181,11 @@ export class EndpointComponent implements OnInit, AfterViewInit {
     dialogRef.componentInstance.endpointSaved.subscribe((newEndpoint: Endpoint) => {
       this.addRow(newEndpoint);
     });
+  }
+
+  responseList(row?: Endpoint) {
+    console.log(row);
+    this.router.navigate(['/response']).then(r => console.log(r));
   }
 
   addRow(newEndpoint: Endpoint) {
