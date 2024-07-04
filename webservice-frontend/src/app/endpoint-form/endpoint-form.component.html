@@ -51,6 +51,6 @@
 </div>
 
 <div mat-dialog-actions>
-  <button mat-button (click)="onCancel()">Cancel</button>
-  <button mat-button [disabled]="form.invalid" (click)="onSave()">Save</button>
+  <button mat-button (click)="onCancel()">取消</button>
+  <button mat-button [disabled]="form.invalid" (click)="onSave()">{{ isEditMode ? '更新 Endpoint' : '新增 Endpoint' }}</button>
 </div>

@@ -22,9 +22,9 @@ import {Router} from "@angular/router";
 
 const COLUMNS_SCHEMA = [
   {
-    key: 'checkbox',
-    type: '',
-    label: '',
+    key: 'id',
+    type: 'text',
+    label: '編號',
   },
   {
     key: 'publishUrl',
@@ -168,6 +168,7 @@ export class EndpointComponent implements OnInit, AfterViewInit {
         1
       );
       this.dataSource.data = data;
+      this.endpointService.deleteEndpoint(data[id].publishUrl).then(r => console.log(r));
     }
     console.log(id);
   }
@@ -179,13 +180,17 @@ export class EndpointComponent implements OnInit, AfterViewInit {
       data: row,
     });
     dialogRef.componentInstance.endpointSaved.subscribe((newEndpoint: Endpoint) => {
-      this.addRow(newEndpoint);
+      if (!row) {
+        this.addRow(newEndpoint);
+      } else {
+        row = newEndpoint;
+      }
     });
   }
 
   responseList(row: Endpoint) {
     console.log(row);
-    this.router.navigate(['/response', { publishUrl: row.publishUrl }]).then(r => console.log(r));
+    this.router.navigate(['/response', {publishUrl: row.publishUrl}]).then(r => console.log(r));
   }
 
   addRow(newEndpoint: Endpoint) {

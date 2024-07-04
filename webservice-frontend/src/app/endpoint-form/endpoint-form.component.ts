@@ -57,6 +57,7 @@ export class EndpointFormComponent {
 
   private initializeForm(data: Endpoint): void {
     const defaultData: Endpoint = {
+      id: '',
       publishUrl: '',
       beanName: '',
       classPath: '',
@@ -68,6 +69,7 @@ export class EndpointFormComponent {
     this.jarFileName = data?.jarFileName || defaultData.jarFileName;
 
     this.form = this.fb.group({
+      id: [data?.id || defaultData.id],
       publishUrl: [data?.publishUrl || defaultData.publishUrl, Validators.required],
       beanName: [data?.beanName || defaultData.beanName, Validators.required],
       classPath: [data?.classPath || defaultData.classPath, Validators.required],
@@ -88,29 +90,11 @@ export class EndpointFormComponent {
       // this.dialogRef.close(this.form.value);
       // Assuming you want to send the entire form value to the server
       const formData = this.form.value;
-      this.endpointService.saveFormData(formData).then(
-        (response: any) => {
-          console.log('Fetched data:', response.data);
-          this.message = 'Endpoint updated successfully!';
-          this.messageType = 'success';
-          this.endpointSaved.emit(response.data);
-          // 倒數2秒後關閉對話框
-          this.countdown = 2;
-          const countdownInterval = setInterval(() => {
-            if (this.countdown !== null && this.countdown > 0) {
-              this.countdown--;
-            } else {
-              clearInterval(countdownInterval);
-              this.dialogRef.close();
-            }
-          }, 1000);
-        },
-        (error) => {
-          // console.error('Error fetching data:', error);
-          this.message = 'Failed to update endpoint!';
-          this.messageType = 'error';
-        }
-      );
+      if(this.isEditMode) {
+        this.updateEndpoint(formData);
+      }else{
+        this.addEndpoint(formData);
+      }
     } else {
       console.error('Form is invalid');
     }
@@ -151,5 +135,56 @@ export class EndpointFormComponent {
     } else {
       console.error('No file selected');
     }
+  }
+
+  private addEndpoint(formData: any): void {
+    this.endpointService.saveFormData(formData).then(
+      (response: any) => {
+        console.log('Fetched data:', response.data);
+        this.message = 'Endpoint save successfully!';
+        this.messageType = 'success';
+        this.endpointSaved.emit(response.data);
+        // 倒數2秒後關閉對話框
+        this.countdown = 2;
+        const countdownInterval = setInterval(() => {
+          if (this.countdown !== null && this.countdown > 0) {
+            this.countdown--;
+          } else {
+            clearInterval(countdownInterval);
+            this.dialogRef.close();
+          }
+        }, 1000);
+      },
+      (error) => {
+        // console.error('Error fetching data:', error);
+        this.message = 'Failed to save endpoint!';
+        this.messageType = 'error';
+      }
+    );
+  }
+
+  private updateEndpoint(formData: any): void {
+    this.endpointService.updateFormData(formData).then(
+      (response: any) => {
+        console.log('Fetched data:', response.data);
+        this.message = 'Endpoint updated successfully!';
+        this.messageType = 'success';
+        this.endpointSaved.emit(response.data);
+        // 倒數2秒後關閉對話框
+        this.countdown = 2;
+        const countdownInterval = setInterval(() => {
+          if (this.countdown !== null && this.countdown > 0) {
+            this.countdown--;
+          } else {
+            clearInterval(countdownInterval);
+            this.dialogRef.close();
+          }
+        }, 1000);
+      },
+      (error) => {
+        this.message = 'Failed to update endpoint!';
+        this.messageType = 'error';
+      }
+    );
   }
 }

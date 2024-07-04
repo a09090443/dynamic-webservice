@@ -1,4 +1,5 @@
 export interface Endpoint {
+  id: string,
   publishUrl: string,
   beanName: string,
   classPath: string,

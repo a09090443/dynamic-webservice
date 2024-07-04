@@ -8,5 +8,6 @@ import java.util.List;
 
 @Repository
 public interface EndpointRepository extends JpaRepository<EndpointEntity, String> {
+    EndpointEntity findByUuId(String id);
     List<EndpointEntity> findAllByIsActive(Boolean isActive);
 }

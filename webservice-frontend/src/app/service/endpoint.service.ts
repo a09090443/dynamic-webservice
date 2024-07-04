@@ -15,7 +15,18 @@ export class EndpointService {
   }
 
   saveFormData(formData: any): Promise<any> {
-    return firstValueFrom(this.http.post<any>('http://localhost:8080/webservice-server/ws/registerWebService', formData));
+    return firstValueFrom(this.http.post<any>('http://localhost:8080/webservice-server/ws/saveWebService', formData));
+  }
+
+  updateFormData(formData: any): Promise<any> {
+    return firstValueFrom(this.http.post<any>('http://localhost:8080/webservice-server/ws/updateWebService', formData));
+  }
+
+  async deleteEndpoint(publishUrl: string): Promise<any> {
+    const params = new HttpParams().set('publishUrl', publishUrl);
+    return await firstValueFrom(this.http.delete('http://localhost:8080/webservice-server/ws/removeWebService', { params }).pipe(
+      catchError(this.handleError)
+    ));
   }
 
   async switchWebservice(publishUrl: string, isActive: boolean): Promise<any> {
@@ -58,4 +69,5 @@ export class EndpointService {
     // @ts-ignore
     return throwError<string>('Something bad happened; please try again later.');
   }
+
 }

@@ -2,7 +2,6 @@ package com.dynamicwebservice.service.impl;
 
 import com.dynamicwebservice.dao.MockResponseDao;
 import com.dynamicwebservice.dto.EndpointDTO;
-import com.dynamicwebservice.dto.EndpointResponse;
 import com.dynamicwebservice.dto.JarFileResponse;
 import com.dynamicwebservice.dto.MockResponseRequest;
 import com.dynamicwebservice.dto.MockResponseResponse;
@@ -10,7 +9,7 @@ import com.dynamicwebservice.entity.EndpointEntity;
 import com.dynamicwebservice.entity.JarFileEntity;
 import com.dynamicwebservice.entity.MockResponseEntity;
 import com.dynamicwebservice.enums.JarFileStatus;
-import com.dynamicwebservice.jdbc.JarFileJDBC;
+import com.dynamicwebservice.jdbc.EndPointJDBC;
 import com.dynamicwebservice.model.WebServiceModel;
 import com.dynamicwebservice.repository.EndpointRepository;
 import com.dynamicwebservice.repository.JarFileRepository;
@@ -18,6 +17,7 @@ import com.dynamicwebservice.repository.MockResponseRepository;
 import com.dynamicwebservice.service.DynamicWebService;
 import com.dynamicwebservice.util.WebServiceHandler;
 import com.zipe.enums.ResourceEnum;
+import com.zipe.jdbc.criteria.Conditions;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.OptimisticLockException;
 import jakarta.persistence.PersistenceException;
@@ -57,7 +57,7 @@ public class DynamicWebServiceImpl implements DynamicWebService {
 
     private final JarFileRepository jarFileRepository;
 
-    private final JarFileJDBC jarFileJDBC;
+    private final EndPointJDBC endPointJDBC;
 
     private final String jarFileDir;
 
@@ -66,7 +66,8 @@ public class DynamicWebServiceImpl implements DynamicWebService {
                           MockResponseRepository mockResponseRepository,
                           MockResponseDao mockResponseDao,
                           EndpointRepository endpointRepository,
-                          JarFileRepository jarFileRepository, JarFileJDBC jarFileJDBC,
+                          JarFileRepository jarFileRepository,
+                          EndPointJDBC endPointJDBC,
                           @Value("${jar.file.dir}") String jarFileDir) {
         this.context = context;
         this.bus = bus;
@@ -74,27 +75,38 @@ public class DynamicWebServiceImpl implements DynamicWebService {
         this.mockResponseDao = mockResponseDao;
         this.endpointRepository = endpointRepository;
         this.jarFileRepository = jarFileRepository;
-        this.jarFileJDBC = jarFileJDBC;
+        this.endPointJDBC = endPointJDBC;
         this.jarFileDir = jarFileDir;
     }
 
     @Override
-    public List<EndpointResponse> getEndpoints() {
+    public List<EndpointDTO> getEndpoints() {
 
-        ResourceEnum resource = ResourceEnum.SQL.getResource(JarFileJDBC.SQL_SELECT_ENDPOINT_RELATED_JAR_FILE);
-        List<WebServiceModel> webServiceModelList = jarFileJDBC.queryForList(resource, new HashMap<>(), WebServiceModel.class);
+        ResourceEnum resource = ResourceEnum.SQL.getResource(EndPointJDBC.SQL_SELECT_ENDPOINT_RELATED_JAR_FILE);
+        List<WebServiceModel> webServiceModelList = endPointJDBC.queryForList(resource, new Conditions(), new HashMap<>(), WebServiceModel.class);
 
         return webServiceModelList.stream().map(endpoint -> {
-            EndpointResponse response = new EndpointResponse();
-            response.setPublishUrl(endpoint.getPublishUrl());
-            response.setClassPath(endpoint.getClassPath());
-            response.setBeanName(endpoint.getBeanName());
-            response.setIsActive(endpoint.getIsActive());
-            response.setJarFileId(endpoint.getJarFileId());
-            response.setJarFileName(endpoint.getJarFileName());
-            response.setFileStatus(endpoint.getFileStatus());
-            return response;
+            EndpointDTO dto = new EndpointDTO();
+            dto.setId(endpoint.getId());
+            dto.setPublishUrl(endpoint.getPublishUrl());
+            dto.setClassPath(endpoint.getClassPath());
+            dto.setBeanName(endpoint.getBeanName());
+            dto.setIsActive(endpoint.getIsActive());
+            dto.setJarFileId(endpoint.getJarFileId());
+            dto.setJarFileName(endpoint.getJarFileName());
+            return dto;
         }).toList();
+    }
+
+    @Override
+    public EndpointDTO getEndpoint(String id) {
+        EndpointEntity endpointEntity = endpointRepository.findByUuId(id);
+        if (endpointEntity != null) {
+            EndpointDTO dto = new EndpointDTO();
+            BeanUtils.copyProperties(endpointEntity, dto);
+            return dto;
+        }
+        return null;
     }
 
     @Override
@@ -121,12 +133,13 @@ public class DynamicWebServiceImpl implements DynamicWebService {
     public void saveWebService(EndpointDTO endpointDTO) throws FileNotFoundException {
 
         EndpointEntity endpointEntity = new EndpointEntity();
+        endpointEntity.setUuId(UUID.randomUUID().toString());
         endpointEntity.setPublishUrl(endpointDTO.getPublishUrl());
         endpointEntity.setClassPath(endpointDTO.getClassPath());
         endpointEntity.setBeanName(endpointDTO.getBeanName());
         endpointEntity.setIsActive(Boolean.FALSE);
         endpointEntity.setJarFileId(endpointDTO.getJarFileId());
-
+        endpointDTO.setId(endpointEntity.getUuId());
         JarFileEntity jarFileEntity = jarFileRepository.findById(endpointDTO.getJarFileId()).orElseThrow(() -> new FileNotFoundException("找不到對應的 Jar 檔案"));
 
         jarFileEntity.setStatus(JarFileStatus.ACTIVE);
@@ -143,6 +156,13 @@ public class DynamicWebServiceImpl implements DynamicWebService {
         }
 
         endpointDTO.setJarFileName(jarFileEntity.getName());
+    }
+
+    @Override
+    public void updateWebService(EndpointDTO endpointDTO) throws FileNotFoundException {
+        EndpointEntity endpointEntity = endpointRepository.findByUuId(endpointDTO.getId());
+        saveWebService(endpointDTO);
+        endpointRepository.delete(endpointEntity);
     }
 
     @Override
@@ -223,6 +243,23 @@ public class DynamicWebServiceImpl implements DynamicWebService {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public void disabledJarFile(String publishUrl) throws Exception {
+        ResourceEnum resource = ResourceEnum.SQL.getResource(EndPointJDBC.SQL_SELECT_ENDPOINT_RELATED_JAR_FILE);
+        Conditions conditions = new Conditions();
+        conditions.equal("e.PUBLISH_URL", publishUrl);
+        List<WebServiceModel> webServiceModelList = endPointJDBC.queryForList(resource, new Conditions(), new HashMap<>(), WebServiceModel.class);
+        webServiceModelList.forEach(endpoint -> {
+            try {
+                JarFileEntity jarFileEntity = jarFileRepository.findById(endpoint.getJarFileId()).orElseThrow(() -> new FileNotFoundException("找不到對應的 Jar 檔案"));
+                jarFileEntity.setStatus(JarFileStatus.INACTIVE);
+                jarFileRepository.save(jarFileEntity);
+            } catch (FileNotFoundException e) {
+                log.error(e.getMessage());
+            }
+        });
     }
 
     @Override

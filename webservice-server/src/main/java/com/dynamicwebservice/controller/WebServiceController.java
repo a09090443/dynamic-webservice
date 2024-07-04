@@ -24,12 +24,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -46,7 +45,13 @@ public class WebServiceController {
 
     @GetMapping("/getEndpoints")
     public Result<List<EndpointResponse>> getEndpoints() throws SQLException {
-        return Result.success(dynamicWebService.getEndpoints());
+        List<EndpointDTO> endpoints = dynamicWebService.getEndpoints();
+        List<EndpointResponse> endpointResponseList = endpoints.stream().map(endpointDTO -> {
+            EndpointResponse response = new EndpointResponse();
+            BeanUtils.copyProperties(endpointDTO, response);
+            return response;
+        }).toList();
+        return Result.success(endpointResponseList);
     }
 
     @PostMapping("/getResponseContent")
@@ -71,9 +76,9 @@ public class WebServiceController {
         return Result.success(mockResponseResponseList);
     }
 
-    @PostMapping("/registerWebService")
-    public Result<EndpointResponse> registerWebService(@RequestBody WebServiceRequest request) throws MalformedURLException, ClassNotFoundException, FileNotFoundException {
-        log.info("Register web service: {}", request);
+    @PostMapping("/saveWebService")
+    public Result<EndpointResponse> saveWebService(@RequestBody WebServiceRequest request) {
+        log.info("Save web service: {}", request);
         EndpointDTO endpointDTO = new EndpointDTO();
         BeanUtils.copyProperties(request, endpointDTO);
 
@@ -89,9 +94,33 @@ public class WebServiceController {
         return Result.success(response);
     }
 
-    @GetMapping("/removeWebService")
-    public Result<String> removeWebService(@RequestBody WebServiceRequest request) throws Exception {
-        dynamicWebService.disabledWebService(request.getPublishUrl(), true);
+    @PostMapping("/updateWebService")
+    public Result<EndpointResponse> updateWebService(@RequestBody WebServiceRequest request) {
+        log.info("Update web service: {}", request);
+
+        try {
+            EndpointDTO endpointDTO = Optional.ofNullable(
+                    dynamicWebService.getEndpoint(request.getId())).orElseThrow(() -> new Exception("Endpoint not found"));
+
+            dynamicWebService.disabledJarFile(endpointDTO.getPublishUrl());
+            BeanUtils.copyProperties(request, endpointDTO);
+            dynamicWebService.updateWebService(endpointDTO);
+            request.setId(endpointDTO.getId());
+        } catch (Exception e) {
+            log.error("Register web service failed:{}", e.getMessage(), e);
+            return Result.failure(ResultStatus.BAD_REQUEST);
+        }
+
+        EndpointResponse response = new EndpointResponse();
+        BeanUtils.copyProperties(request, response);
+        return Result.success(response);
+    }
+
+    @PostMapping("/removeWebService")
+    public Result<String> removeWebService(@RequestBody String[] publishUrls) throws Exception {
+        for (String publishUrl : publishUrls) {
+            dynamicWebService.removeWebService(publishUrl);
+        }
         return Result.success(StringUtils.EMPTY);
     }
 
@@ -113,6 +142,13 @@ public class WebServiceController {
 
     @PostMapping("/saveMockResponse")
     public Result<String> saveMockResponse(@RequestBody MockResponseRequest request) {
+        if (StringUtils.isBlank(request.getPublishUrl())) {
+            return Result.failure(ResultStatus.BAD_REQUEST, "Publish URL is required");
+        } else if (StringUtils.isBlank(request.getMethod())) {
+            return Result.failure(ResultStatus.BAD_REQUEST, "Method is required");
+        } else if (StringUtils.isBlank(request.getCondition())) {
+            return Result.failure(ResultStatus.BAD_REQUEST, "Condition is required");
+        }
         dynamicWebService.saveMockResponse(request);
         return Result.success("Success");
     }

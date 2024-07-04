@@ -1,10 +1,10 @@
 package com.dynamicwebservice.dto;
 
 import lombok.Data;
-import org.springframework.web.multipart.MultipartFile;
 
 @Data
 public class WebServiceRequest {
+    private String id;
 
     private String beanName;
 

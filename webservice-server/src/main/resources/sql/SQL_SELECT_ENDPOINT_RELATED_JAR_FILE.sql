@@ -1,4 +1,5 @@
-SELECT e.PUBLISH_URL AS publishUrl,
+SELECT e.ID          AS id,
+       e.PUBLISH_URL AS publishUrl,
        e.BEAN_NAME   AS beanName,
        e.CLASS_PATH  AS classPath,
        e.IS_ACTIVE   AS isActive,
@@ -8,3 +9,4 @@ SELECT e.PUBLISH_URL AS publishUrl,
 FROM ENDPOINT e
          INNER JOIN JAR_FILE jf ON e.JAR_FILE_ID = jf.ID
 WHERE 1 = 1
+    ${CONDITIONS}
