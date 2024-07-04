@@ -36,7 +36,7 @@ import {MatCheckbox} from "@angular/material/checkbox";
   templateUrl: './response-form.component.html',
   styleUrl: './response-form.component.css'
 })
-export class ResponseFormComponent implements OnInit{
+export class ResponseFormComponent implements OnInit {
   form!: FormGroup;
   isEditMode: boolean;
   publishUrl: string | null = null;
@@ -53,20 +53,23 @@ export class ResponseFormComponent implements OnInit{
     private dialogRef: MatDialogRef<ResponseFormComponent>,
     private responseService: ResponseService
   ) {
-    this.isEditMode = !!data; // 判断是否为编辑模式
+    this.isEditMode = !!data.id; // 判断是否为编辑模式
     this.initializeForm(data || {} as Response); // 初始化表单
   }
 
   private initializeForm(data: Response): void {
     this.publishUrl = data.publishUrl;
     const defaultData: Response = {
+      id: '',
       publishUrl: '',
       method: '',
       condition: '',
       responseContent: '',
       isActive: false,
     };
+
     this.form = this.fb.group({
+      id: [data?.id || defaultData.id],
       publishUrl: [data?.publishUrl || defaultData.publishUrl, Validators.required],
       method: [data?.method || defaultData.method, Validators.required],
       condition: [data?.condition || defaultData.condition, Validators.required],
@@ -79,30 +82,13 @@ export class ResponseFormComponent implements OnInit{
     if (this.form.valid) {
       console.log('Form data:', this.form.value);
       const formData = this.form.value;
-      // formData.publishUrl = this.publishUrl;
-      this.responseService.saveFormData(formData).then(
-        (response: any) => {
-          console.log('Fetched data:', response.data);
-          this.message = 'Response updated successfully!';
-          this.messageType = 'success';
-          this.responseSaved.emit(response.data);
-          // 倒數2秒後關閉對話框
-          this.countdown = 2;
-          const countdownInterval = setInterval(() => {
-            if (this.countdown !== null && this.countdown > 0) {
-              this.countdown--;
-            } else {
-              clearInterval(countdownInterval);
-              this.dialogRef.close();
-            }
-          }, 1000);
-        },
-        (error) => {
-          // console.error('Error fetching data:', error);
-          this.message = 'Failed to update response!';
-          this.messageType = 'error';
-        }
-      );
+
+      if (this.isEditMode) {
+        this.updateResponse(formData);
+      } else {
+        this.addResponse(formData);
+      }
+
     } else {
       console.error('Form is invalid');
     }
@@ -117,13 +103,6 @@ export class ResponseFormComponent implements OnInit{
   }
 
   ngOnInit(): void {
-    this.form = this.fb.group({
-      publishUrl: this.publishUrl,
-      method: [''],
-      condition: [''],
-      responseContent: ['']
-    });
-
     this.form.get('responseContent')!.valueChanges.subscribe(value => {
       this.isResponseContentValidJson = this.isValidJson(value);
     });
@@ -136,5 +115,57 @@ export class ResponseFormComponent implements OnInit{
     } catch (e) {
       return false;
     }
+  }
+
+  addResponse(formData: any): void {
+    this.responseService.saveFormData(formData).then(
+      (response: any) => {
+        console.log('Fetched data:', response.data);
+        this.message = 'Response updated successfully!';
+        this.messageType = 'success';
+        this.responseSaved.emit(response.data);
+        // 倒數2秒後關閉對話框
+        this.countdown = 2;
+        const countdownInterval = setInterval(() => {
+          if (this.countdown !== null && this.countdown > 0) {
+            this.countdown--;
+          } else {
+            clearInterval(countdownInterval);
+            this.dialogRef.close();
+          }
+        }, 1000);
+      },
+      (error) => {
+        // console.error('Error fetching data:', error);
+        this.message = 'Failed to update response!';
+        this.messageType = 'error';
+      }
+    );
+  }
+
+  updateResponse(formData: any) {
+    this.responseService.updateFormData(formData).then(
+      (response: any) => {
+        console.log('Fetched data:', response.data);
+        this.message = 'Response updated successfully!';
+        this.messageType = 'success';
+        this.responseSaved.emit(response.data);
+        // 倒數2秒後關閉對話框
+        this.countdown = 2;
+        const countdownInterval = setInterval(() => {
+          if (this.countdown !== null && this.countdown > 0) {
+            this.countdown--;
+          } else {
+            clearInterval(countdownInterval);
+            this.dialogRef.close();
+          }
+        }, 1000);
+      },
+      (error) => {
+        // console.error('Error fetching data:', error);
+        this.message = 'Failed to update response!';
+        this.messageType = 'error';
+      }
+    );
   }
 }

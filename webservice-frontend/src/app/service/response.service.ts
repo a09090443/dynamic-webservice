@@ -1,6 +1,7 @@
 import {Injectable} from '@angular/core';
 import {HttpClient, HttpParams} from "@angular/common/http";
 import {firstValueFrom} from "rxjs";
+import {Response} from "../model/response";
 
 @Injectable({
   providedIn: 'root'
@@ -11,7 +12,7 @@ export class ResponseService {
   }
 
   fetchData(publishUrl: string): Promise<any> {
-    const body = { publishUrl: publishUrl };
+    const body = {publishUrl: publishUrl};
     return firstValueFrom(this.http.post('http://localhost:8080/webservice-server/ws/getResponseList', body));
   }
 
@@ -19,11 +20,15 @@ export class ResponseService {
     return firstValueFrom(this.http.post<any>('http://localhost:8080/webservice-server/ws/saveMockResponse', formData));
   }
 
-  async switchResponse(publishUrl: string, isActive: boolean): Promise<any> {
+  updateFormData(formData: any): Promise<any> {
+    return firstValueFrom(this.http.post<any>('http://localhost:8080/webservice-server/ws/updateResponse', formData));
+  }
+
+  async switchResponse(row: Response, isActive: boolean): Promise<any> {
     const params = new HttpParams()
-      .set('publishUrl', publishUrl)
+      .set('id', row.id)
       .set('isActive', isActive.toString());
-    return await firstValueFrom(this.http.get('http://localhost:8080/webservice-server/ws/switchWebService', {params}));
+    return await firstValueFrom(this.http.get('http://localhost:8080/webservice-server/ws/switchResponse', { params }));
   }
 
 }

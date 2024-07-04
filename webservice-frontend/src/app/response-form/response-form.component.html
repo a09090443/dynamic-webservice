@@ -6,14 +6,14 @@
   </div>
   <form [formGroup]="form" style="display: flex; flex-direction: column;">
     <mat-form-field class="example-form-field" style="flex: 1;" *ngIf="publishUrl">
-      <mat-label>發布名稱</mat-label>
+      <mat-label>Publish URL</mat-label>
       <input matInput type="text" [value]="publishUrl" disabled>
     </mat-form-field>
 
     <mat-form-field class="example-form-field" style="flex: 1;">
       <mat-label>呼叫方法名稱</mat-label>
       <input matInput type="text" formControlName="method">
-      <button *ngIf="form.get('classPath')?.value" mat-icon-button matSuffix aria-label="Clear" (click)="clearField('method')">
+      <button *ngIf="form.get('method')?.value" mat-icon-button matSuffix aria-label="Clear" (click)="clearField('method')">
         <mat-icon>close</mat-icon>
       </button>
     </mat-form-field>
@@ -48,5 +48,5 @@
 
 <div mat-dialog-actions>
   <button mat-button (click)="onCancel()">Cancel</button>
-  <button mat-button [disabled]="form.invalid" (click)="onSave()">Save</button>
+  <button mat-button [disabled]="form.invalid" (click)="onSave()">{{ isEditMode ? '更新 Response' : '新增 Response' }}</button>
 </div>

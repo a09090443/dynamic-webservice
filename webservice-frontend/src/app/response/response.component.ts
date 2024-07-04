@@ -1,35 +1,20 @@
 import {AfterViewInit, Component, OnInit, ViewChild} from '@angular/core';
-import {DatePipe, NgClass, NgForOf, NgIf, NgSwitch, NgSwitchCase, NgSwitchDefault} from "@angular/common";
+import {DatePipe, NgForOf, NgIf, NgSwitch, NgSwitchCase, NgSwitchDefault} from "@angular/common";
 import {HeaderComponent} from "../header/header.component";
-import {MatButton, MatButtonModule, MatIconButton} from "@angular/material/button";
-import {
-  MatCell,
-  MatCellDef,
-  MatColumnDef,
-  MatHeaderCell,
-  MatHeaderCellDef,
-  MatHeaderRow,
-  MatHeaderRowDef,
-  MatRow,
-  MatRowDef,
-  MatTable,
-  MatTableDataSource, MatTableModule
-} from "@angular/material/table";
+import {MatButtonModule} from "@angular/material/button";
+import {MatTableDataSource, MatTableModule} from "@angular/material/table";
 import {MatCheckbox} from "@angular/material/checkbox";
-import {MatFormField, MatFormFieldModule, MatLabel} from "@angular/material/form-field";
-import {MatInput, MatInputModule} from "@angular/material/input";
+import {MatInputModule} from "@angular/material/input";
 import {MatPaginator, MatPaginatorModule} from "@angular/material/paginator";
 import {MatSlideToggle} from "@angular/material/slide-toggle";
-import {MatSort, MatSortHeader, MatSortModule} from "@angular/material/sort";
+import {MatSort, MatSortModule} from "@angular/material/sort";
 import {SelectionModel} from "@angular/cdk/collections";
-import {MatDialog, MatDialogActions, MatDialogContent, MatDialogModule, MatDialogTitle} from "@angular/material/dialog";
+import {MatDialog, MatDialogModule} from "@angular/material/dialog";
 import {ActivatedRoute} from "@angular/router";
-import {EndpointFormComponent} from "../endpoint-form/endpoint-form.component";
 import {Response} from "../model/response";
 import {ResponseService} from "../service/response.service";
 import {ResponseFormComponent} from "../response-form/response-form.component";
-import {FormsModule, ReactiveFormsModule} from "@angular/forms";
-import {MatIcon} from "@angular/material/icon";
+import {FormsModule} from "@angular/forms";
 import {MatCardModule} from "@angular/material/card";
 import {MatDatepickerModule} from "@angular/material/datepicker";
 import {MatNativeDateModule} from "@angular/material/core";
@@ -117,7 +102,7 @@ export class ResponseComponent implements OnInit, AfterViewInit {
 
   constructor(public dialog: MatDialog,
               private responseService: ResponseService,
-              private route: ActivatedRoute ) {
+              private route: ActivatedRoute) {
   }
 
   ngOnInit(): void {
@@ -192,12 +177,12 @@ export class ResponseComponent implements OnInit, AfterViewInit {
   }
 
   openResponseForm(input?: Response | string) {
-    let dialogData: { row?: Response; publishUrl?: string } = {};
+    let dialogData: { publishUrl?: string } = {};
 
     if (typeof input === 'string') {
       dialogData.publishUrl = input;
     } else if (input && typeof input === 'object') {
-      dialogData.row = input;
+      dialogData = input;
     }
 
     const dialogRef = this.dialog.open(ResponseFormComponent, {
@@ -206,7 +191,11 @@ export class ResponseComponent implements OnInit, AfterViewInit {
       data: dialogData,
     });
     dialogRef.componentInstance.responseSaved.subscribe((newResponse: Response) => {
-      this.addRow(newResponse);
+      if (typeof input === 'string') {
+        this.addRow(newResponse);
+      } else {
+        Object.assign(dialogData, newResponse);
+      }
     });
   }
 
@@ -217,8 +206,7 @@ export class ResponseComponent implements OnInit, AfterViewInit {
   onSwitchChange(event: any, row: Response): void {
     const confirmation = confirm('你確定要變更此設定嗎？');
     if (confirmation) {
-      console.log('User confirmed');
-      this.responseService.switchResponse(row.publishUrl, event.checked).then(
+      this.responseService.switchResponse(row, event.checked).then(
         (response: any) => {
           console.log('Switched web service:', response.data);
           // Handle success

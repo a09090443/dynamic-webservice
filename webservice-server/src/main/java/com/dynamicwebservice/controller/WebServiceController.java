@@ -79,6 +79,23 @@ public class WebServiceController {
     @PostMapping("/saveWebService")
     public Result<EndpointResponse> saveWebService(@RequestBody WebServiceRequest request) {
         log.info("Save web service: {}", request);
+
+        if (StringUtils.isBlank(request.getPublishUrl())) {
+            log.error("PublishUrl is blank");
+        }
+        if (StringUtils.isBlank(request.getBeanName())) {
+            log.error("BeanName is blank");
+        }
+        if (StringUtils.isBlank(request.getClassPath())) {
+            log.error("ClassPath is blank");
+        }
+
+        if (StringUtils.isBlank(request.getPublishUrl()) ||
+                StringUtils.isBlank(request.getBeanName()) ||
+                StringUtils.isBlank(request.getClassPath())) {
+            return Result.failure(ResultStatus.BAD_REQUEST);
+        }
+
         EndpointDTO endpointDTO = new EndpointDTO();
         BeanUtils.copyProperties(request, endpointDTO);
 
@@ -106,7 +123,7 @@ public class WebServiceController {
             BeanUtils.copyProperties(request, endpointDTO);
             dynamicWebService.updateWebService(endpointDTO);
         } catch (Exception e) {
-            log.error("Register web service failed:{}", e.getMessage(), e);
+            log.error("Update web service failed:{}", e.getMessage(), e);
             return Result.failure(ResultStatus.BAD_REQUEST);
         }
 
@@ -140,16 +157,56 @@ public class WebServiceController {
     }
 
     @PostMapping("/saveMockResponse")
-    public Result<String> saveMockResponse(@RequestBody MockResponseRequest request) {
+    public Result<MockResponseResponse> saveMockResponse(@RequestBody MockResponseRequest request) {
+        log.info("Save mock response: {}", request);
+
         if (StringUtils.isBlank(request.getPublishUrl())) {
-            return Result.failure(ResultStatus.BAD_REQUEST, "Publish URL is required");
-        } else if (StringUtils.isBlank(request.getMethod())) {
-            return Result.failure(ResultStatus.BAD_REQUEST, "Method is required");
-        } else if (StringUtils.isBlank(request.getCondition())) {
-            return Result.failure(ResultStatus.BAD_REQUEST, "Condition is required");
+            log.error("PublishUrl is blank");
         }
+        if (StringUtils.isBlank(request.getMethod())) {
+            log.error("Method is blank");
+        }
+        if (StringUtils.isBlank(request.getCondition())) {
+            log.error("Condition is blank");
+        }
+        if (StringUtils.isBlank(request.getPublishUrl()) ||
+                StringUtils.isBlank(request.getMethod()) ||
+                StringUtils.isBlank(request.getCondition())) {
+            return Result.failure(ResultStatus.BAD_REQUEST);
+        }
+
         dynamicWebService.saveMockResponse(request);
-        return Result.success("Success");
+        MockResponseResponse mockResponseResponse = new MockResponseResponse();
+        BeanUtils.copyProperties(request, mockResponseResponse);
+
+        return Result.success(mockResponseResponse);
+    }
+
+    @PostMapping("/updateResponse")
+    public Result<MockResponseResponse> updateResponse(@RequestBody MockResponseRequest request) {
+        log.info("Update response: {}", request);
+        try {
+            dynamicWebService.updateMockResponse(request);
+        } catch (Exception e) {
+            log.error("Register web service failed:{}", e.getMessage(), e);
+            return Result.failure(ResultStatus.BAD_REQUEST);
+        }
+
+        MockResponseResponse response = new MockResponseResponse();
+        BeanUtils.copyProperties(request, response);
+        return Result.success(response);
+    }
+
+    @GetMapping("/switchResponse")
+    public Result<String> switchResponse(@RequestParam String id, @RequestParam Boolean isActive) {
+        if (StringUtils.isNotBlank(id) && isActive != null) {
+            try{
+                dynamicWebService.switchMockResponse(id, isActive);
+            }catch (Exception e){
+                log.error("Switch endpoint failure, id:{}, isActive:{}", id, isActive, e);
+            }
+        }
+        return Result.success(StringUtils.EMPTY);
     }
 
     @PostMapping("/uploadJarFile")

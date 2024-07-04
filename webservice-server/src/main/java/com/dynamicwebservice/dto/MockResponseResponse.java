@@ -5,6 +5,8 @@ import lombok.Data;
 @Data
 public class MockResponseResponse {
 
+    private String id;
+
     private String publishUrl;
 
     private String method;

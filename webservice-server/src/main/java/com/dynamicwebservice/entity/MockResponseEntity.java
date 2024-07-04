@@ -13,6 +13,9 @@ import lombok.Setter;
 @Table(name = "MOCK_RESPONSE")
 public class MockResponseEntity extends BaseEntity{
 
+        @Column(name = "ID", nullable = false)
+        private String uuId;
+
         @EmbeddedId
         private MockResponseId id = new MockResponseId();
 

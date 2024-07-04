@@ -1,6 +1,5 @@
 package com.dynamicwebservice.service.impl;
 
-import com.dynamicwebservice.dao.MockResponseDao;
 import com.dynamicwebservice.dto.EndpointDTO;
 import com.dynamicwebservice.dto.JarFileResponse;
 import com.dynamicwebservice.dto.MockResponseRequest;
@@ -10,6 +9,7 @@ import com.dynamicwebservice.entity.JarFileEntity;
 import com.dynamicwebservice.entity.MockResponseEntity;
 import com.dynamicwebservice.enums.JarFileStatus;
 import com.dynamicwebservice.jdbc.EndPointJDBC;
+import com.dynamicwebservice.jdbc.MockResponseJDBC;
 import com.dynamicwebservice.model.WebServiceModel;
 import com.dynamicwebservice.repository.EndpointRepository;
 import com.dynamicwebservice.repository.JarFileRepository;
@@ -18,6 +18,7 @@ import com.dynamicwebservice.service.DynamicWebService;
 import com.dynamicwebservice.util.WebServiceHandler;
 import com.zipe.enums.ResourceEnum;
 import com.zipe.jdbc.criteria.Conditions;
+import com.zipe.util.time.DateTimeUtils;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.OptimisticLockException;
 import jakarta.persistence.PersistenceException;
@@ -26,6 +27,7 @@ import org.apache.cxf.Bus;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.stereotype.Service;
 
 import java.io.FileNotFoundException;
@@ -38,6 +40,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -51,31 +54,30 @@ public class DynamicWebServiceImpl implements DynamicWebService {
 
     private final MockResponseRepository mockResponseRepository;
 
-    private final MockResponseDao mockResponseDao;
-
     private final EndpointRepository endpointRepository;
 
     private final JarFileRepository jarFileRepository;
 
     private final EndPointJDBC endPointJDBC;
 
+    private final MockResponseJDBC mockResponseJDBC;
+
     private final String jarFileDir;
 
     DynamicWebServiceImpl(ApplicationContext context,
                           Bus bus,
                           MockResponseRepository mockResponseRepository,
-                          MockResponseDao mockResponseDao,
                           EndpointRepository endpointRepository,
                           JarFileRepository jarFileRepository,
-                          EndPointJDBC endPointJDBC,
+                          EndPointJDBC endPointJDBC, MockResponseJDBC mockResponseJDBC,
                           @Value("${jar.file.dir}") String jarFileDir) {
         this.context = context;
         this.bus = bus;
         this.mockResponseRepository = mockResponseRepository;
-        this.mockResponseDao = mockResponseDao;
         this.endpointRepository = endpointRepository;
         this.jarFileRepository = jarFileRepository;
         this.endPointJDBC = endPointJDBC;
+        this.mockResponseJDBC = mockResponseJDBC;
         this.jarFileDir = jarFileDir;
     }
 
@@ -120,6 +122,7 @@ public class DynamicWebServiceImpl implements DynamicWebService {
         List<MockResponseEntity> mockResponseEntity = mockResponseRepository.findByIdPublishUrl(request.getPublishUrl());
         return mockResponseEntity.stream().map(mockResponse -> {
             MockResponseResponse response = new MockResponseResponse();
+            response.setId(mockResponse.getUuId());
             response.setPublishUrl(mockResponse.getId().getPublishUrl());
             response.setMethod(mockResponse.getId().getMethod());
             response.setCondition(mockResponse.getId().getCondition());
@@ -170,11 +173,39 @@ public class DynamicWebServiceImpl implements DynamicWebService {
     @Override
     public void saveMockResponse(MockResponseRequest request) {
         MockResponseEntity mockResponseEntity = new MockResponseEntity();
+        mockResponseEntity.setUuId(UUID.randomUUID().toString());
         mockResponseEntity.getId().setPublishUrl(request.getPublishUrl());
         mockResponseEntity.getId().setMethod(request.getMethod());
         mockResponseEntity.getId().setCondition(request.getCondition());
         mockResponseEntity.setResponseContent(request.getResponseContent());
         mockResponseEntity.setIsActive(Boolean.FALSE);
+        mockResponseRepository.save(mockResponseEntity);
+    }
+
+    @Override
+    public void updateMockResponse(MockResponseRequest request) {
+        ResourceEnum resource = ResourceEnum.SQL.getResource(MockResponseJDBC.SQL_UPDATE_RESPONSE);
+        Map<String, Object> paramMap = new HashMap<>();
+        paramMap.put("publishUrl", request.getPublishUrl());
+        paramMap.put("method", request.getMethod());
+        paramMap.put("condition", request.getCondition());
+        paramMap.put("responseContent", request.getResponseContent());
+        paramMap.put("id", request.getId());
+        paramMap.put("updatedAt", DateTimeUtils.getDateNow());
+        try {
+            mockResponseJDBC.update(resource, paramMap);
+        } catch (IncorrectResultSizeDataAccessException e) {
+            log.error("publishUrl:{}", request.getPublishUrl());
+            log.error("method:{}", request.getMethod());
+            log.error("condition:{}", request.getCondition());
+            log.error("IncorrectResultSizeDataAccessException:{}", e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void switchMockResponse(String id, Boolean status) {
+        MockResponseEntity mockResponseEntity = mockResponseRepository.findByUuId(id);
+        mockResponseEntity.setIsActive(status);
         mockResponseRepository.save(mockResponseEntity);
     }
 

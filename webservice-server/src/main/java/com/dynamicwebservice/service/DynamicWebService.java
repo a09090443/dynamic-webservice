@@ -24,5 +24,7 @@ public interface DynamicWebService {
     void disabledJarFile(String publishUrl) throws Exception;
     void removeWebService(String publishUrl) throws Exception;
     void saveMockResponse(MockResponseRequest request);
+    void updateMockResponse(MockResponseRequest request);
+    void switchMockResponse(String id, Boolean status);
     JarFileResponse uploadJarFile(InputStream inputStream) throws IOException;
 }

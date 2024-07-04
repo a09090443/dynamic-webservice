@@ -11,4 +11,5 @@ import java.util.List;
 public interface MockResponseRepository extends JpaRepository<MockResponseEntity, MockResponseId> {
     MockResponseEntity findByIdPublishUrlAndIdMethodAndIdConditionAndIsActive(String publishUrl, String method, String condition, Boolean isActive);
     List<MockResponseEntity> findByIdPublishUrl(String publishUrl);
+    MockResponseEntity findByUuId(String id);
 }
