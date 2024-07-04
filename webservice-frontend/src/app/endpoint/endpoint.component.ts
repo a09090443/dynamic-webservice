@@ -183,7 +183,7 @@ export class EndpointComponent implements OnInit, AfterViewInit {
       if (!row) {
         this.addRow(newEndpoint);
       } else {
-        row = newEndpoint;
+        Object.assign(row, newEndpoint);
       }
     });
   }

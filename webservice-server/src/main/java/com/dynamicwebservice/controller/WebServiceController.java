@@ -97,22 +97,21 @@ public class WebServiceController {
     @PostMapping("/updateWebService")
     public Result<EndpointResponse> updateWebService(@RequestBody WebServiceRequest request) {
         log.info("Update web service: {}", request);
-
+        EndpointDTO endpointDTO;
         try {
-            EndpointDTO endpointDTO = Optional.ofNullable(
+            endpointDTO = Optional.ofNullable(
                     dynamicWebService.getEndpoint(request.getId())).orElseThrow(() -> new Exception("Endpoint not found"));
 
             dynamicWebService.disabledJarFile(endpointDTO.getPublishUrl());
             BeanUtils.copyProperties(request, endpointDTO);
             dynamicWebService.updateWebService(endpointDTO);
-            request.setId(endpointDTO.getId());
         } catch (Exception e) {
             log.error("Register web service failed:{}", e.getMessage(), e);
             return Result.failure(ResultStatus.BAD_REQUEST);
         }
 
         EndpointResponse response = new EndpointResponse();
-        BeanUtils.copyProperties(request, response);
+        BeanUtils.copyProperties(endpointDTO, response);
         return Result.success(response);
     }
 

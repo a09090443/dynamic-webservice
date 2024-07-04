@@ -162,7 +162,9 @@ public class DynamicWebServiceImpl implements DynamicWebService {
     public void updateWebService(EndpointDTO endpointDTO) throws FileNotFoundException {
         EndpointEntity endpointEntity = endpointRepository.findByUuId(endpointDTO.getId());
         saveWebService(endpointDTO);
-        endpointRepository.delete(endpointEntity);
+        if (!endpointDTO.getPublishUrl().equals(endpointEntity.getPublishUrl())) {
+            endpointRepository.delete(endpointEntity);
+        }
     }
 
     @Override
