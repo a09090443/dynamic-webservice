@@ -163,11 +163,7 @@ public class DynamicWebServiceImpl implements DynamicWebService {
 
     @Override
     public void updateWebService(EndpointDTO endpointDTO) throws FileNotFoundException {
-        EndpointEntity endpointEntity = endpointRepository.findByUuId(endpointDTO.getId());
         saveWebService(endpointDTO);
-        if (!endpointDTO.getPublishUrl().equals(endpointEntity.getPublishUrl())) {
-            endpointRepository.delete(endpointEntity);
-        }
     }
 
     @Override
@@ -198,6 +194,35 @@ public class DynamicWebServiceImpl implements DynamicWebService {
             log.error("publishUrl:{}", request.getPublishUrl());
             log.error("method:{}", request.getMethod());
             log.error("condition:{}", request.getCondition());
+            log.error("IncorrectResultSizeDataAccessException:{}", e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void updateMockResponse(String oriPublishUrl, String newPublishUrl) {
+        ResourceEnum resource = ResourceEnum.SQL.getResource(MockResponseJDBC.SQL_UPDATE_PUBLISH_URL_FOR_RESPONSE);
+        Map<String, Object> paramMap = new HashMap<>();
+        paramMap.put("oriPublishUrl", oriPublishUrl);
+        paramMap.put("newPublishUrl", newPublishUrl);
+        paramMap.put("updatedAt", DateTimeUtils.getDateNow());
+        try {
+            mockResponseJDBC.update(resource, paramMap);
+        } catch (IncorrectResultSizeDataAccessException e) {
+            log.error("oriPublishUrl:{}", oriPublishUrl);
+            log.error("newPublishUrl:{}", newPublishUrl);
+            log.error("IncorrectResultSizeDataAccessException:{}", e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void deleteMockResponse(String id) {
+        ResourceEnum resource = ResourceEnum.SQL.getResource(MockResponseJDBC.SQL_DEL_RESPONSE);
+        Map<String, Object> paramMap = new HashMap<>();
+        paramMap.put("id", id);
+        try {
+            mockResponseJDBC.update(resource, paramMap);
+        } catch (IncorrectResultSizeDataAccessException e) {
+            log.error("id:{}", id);
             log.error("IncorrectResultSizeDataAccessException:{}", e.getMessage(), e);
         }
     }

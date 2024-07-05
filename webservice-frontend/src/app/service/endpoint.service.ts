@@ -22,9 +22,10 @@ export class EndpointService {
     return firstValueFrom(this.http.post<any>('http://localhost:8080/webservice-server/ws/updateWebService', formData));
   }
 
-  async deleteEndpoint(publishUrl: string): Promise<any> {
-    const params = new HttpParams().set('publishUrl', publishUrl);
-    return await firstValueFrom(this.http.delete('http://localhost:8080/webservice-server/ws/removeWebService', { params }).pipe(
+  async deleteEndpoint(publishUrls: string[]): Promise<any> {
+    return await firstValueFrom(this.http.request('delete', 'http://localhost:8080/webservice-server/ws/removeWebService', {
+      body: publishUrls
+    }).pipe(
       catchError(this.handleError)
     ));
   }

@@ -14,8 +14,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -115,24 +115,33 @@ public class WebServiceController {
     public Result<EndpointResponseDTO> updateWebService(@RequestBody WebServiceRequestDTO request) {
         log.info("Update web service: {}", request);
         EndpointDTO endpointDTO;
+        EndpointDTO newEndpointDTO = new EndpointDTO();
+
         try {
             endpointDTO = Optional.ofNullable(
                     dynamicWebService.getEndpoint(request.getId())).orElseThrow(() -> new Exception("Endpoint not found"));
             dynamicWebService.disabledWebService(endpointDTO.getPublishUrl(), false);
-            BeanUtils.copyProperties(request, endpointDTO);
+
+            BeanUtils.copyProperties(request, newEndpointDTO);
             endpointDTO.setIsActive(false);
-            dynamicWebService.updateWebService(endpointDTO);
+            dynamicWebService.updateWebService(newEndpointDTO);
+
+            if (!endpointDTO.getPublishUrl().equals(newEndpointDTO.getPublishUrl())) {
+                dynamicWebService.removeWebService(endpointDTO.getPublishUrl());
+                dynamicWebService.updateMockResponse(endpointDTO.getPublishUrl(), newEndpointDTO.getPublishUrl());
+            }
+
         } catch (Exception e) {
             log.error("Update web service failed:{}", e.getMessage(), e);
             return Result.failure(ResultStatus.BAD_REQUEST);
         }
 
         EndpointResponseDTO response = new EndpointResponseDTO();
-        BeanUtils.copyProperties(endpointDTO, response);
+        BeanUtils.copyProperties(newEndpointDTO, response);
         return Result.success(response);
     }
 
-    @PostMapping("/removeWebService")
+    @DeleteMapping("/removeWebService")
     public Result<String> removeWebService(@RequestBody String[] publishUrls) throws Exception {
         for (String publishUrl : publishUrls) {
             dynamicWebService.removeWebService(publishUrl);
@@ -196,6 +205,14 @@ public class WebServiceController {
         MockResponseResponseDTO response = new MockResponseResponseDTO();
         BeanUtils.copyProperties(request, response);
         return Result.success(response);
+    }
+
+    @DeleteMapping("/deleteResponse")
+    public Result<String> deleteResponse(@RequestBody String[] ids) {
+        for (String id : ids) {
+            dynamicWebService.deleteMockResponse(id);
+        }
+        return Result.success(StringUtils.EMPTY);
     }
 
     @GetMapping("/switchResponse")

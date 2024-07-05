@@ -154,7 +154,25 @@ export class EndpointComponent implements OnInit, AfterViewInit {
   removeSelectedRows() {
     const deleteItem = confirm("確定刪除?");
     if (deleteItem) {
+      const selectedRows = this.dataSource.data.filter(item => this.selection.isSelected(item));
+      const selectedUrls = selectedRows.map(item => item.publishUrl);
+      // 移除前端表格中的選中行
       this.dataSource.data = this.dataSource.data.filter(item => !this.selection.isSelected(item));
+
+      // 發送 DELETE 請求到後端
+      this.endpointService.deleteEndpoint(selectedUrls)
+        .then(
+          response => {
+            console.log('刪除成功', response);
+          },
+          error => {
+            console.error('刪除失敗', error);
+            // 這裡你可以根據需要處理刪除失敗的情況
+          }
+        );
+
+      // 清空選擇
+      this.selection.clear();
     }
     console.log(this.dataSource.data);
   }
@@ -163,12 +181,25 @@ export class EndpointComponent implements OnInit, AfterViewInit {
     const deleteItem = confirm("確定刪除?");
     if (deleteItem) {
       const data = this.dataSource.data;
-      data.splice(
-        this.paginator.pageIndex * this.paginator.pageSize + id,
-        1
-      );
-      this.dataSource.data = data;
-      this.endpointService.deleteEndpoint(data[id].publishUrl).then(r => console.log(r));
+      const rowIndex = this.paginator.pageIndex * this.paginator.pageSize + id;
+      const rowData = data[id];
+
+      data.splice(rowIndex, 1);
+      this.dataSource.data = [...data]; // 使用新的數組引用來觸發 Angular 變更檢測
+
+      // 發送 DELETE 請求到後端
+      this.endpointService.deleteEndpoint([rowData.publishUrl])
+        .then(
+          response => {
+            console.log('刪除成功', response);
+          },
+          error => {
+            console.error('刪除失敗', error);
+            // 可以在這裡處理刪除失敗的情況，例如恢復已刪除的行
+            this.dataSource.data.splice(rowIndex, 0, rowData); // 恢復已刪除的行
+            this.dataSource.data = [...this.dataSource.data]; // 重新設置數據以觸發變更檢測
+          }
+        );
     }
     console.log(id);
   }
