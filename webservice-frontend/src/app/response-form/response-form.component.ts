@@ -1,4 +1,4 @@
-import {Component, EventEmitter, Inject, OnInit, Output} from '@angular/core';
+import {Component, EventEmitter, Inject, Output} from '@angular/core';
 import {NgClass, NgIf} from "@angular/common";
 import {MatFormFieldModule} from "@angular/material/form-field";
 import {MatIcon} from "@angular/material/icon";
@@ -36,7 +36,7 @@ import {MatCheckbox} from "@angular/material/checkbox";
   templateUrl: './response-form.component.html',
   styleUrl: './response-form.component.css'
 })
-export class ResponseFormComponent implements OnInit {
+export class ResponseFormComponent {
   form!: FormGroup;
   isEditMode: boolean;
   publishUrl: string | null = null;
@@ -100,21 +100,6 @@ export class ResponseFormComponent implements OnInit {
 
   clearField(fieldName: string): void {
     this.form.get(fieldName)!.setValue('');
-  }
-
-  ngOnInit(): void {
-    this.form.get('responseContent')!.valueChanges.subscribe(value => {
-      this.isResponseContentValidJson = this.isValidJson(value);
-    });
-  }
-
-  isValidJson(str: string): boolean {
-    try {
-      JSON.parse(str);
-      return true;
-    } catch (e) {
-      return false;
-    }
   }
 
   addResponse(formData: any): void {

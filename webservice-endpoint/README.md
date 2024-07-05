@@ -16,6 +16,8 @@
 - 使用 wsdl 文件產出 java pojo 方法
     - 下載 [apache cxf](https://cxf.apache.org/download.html)
     - 輸入指令 ${cxf目錄}/bin/wsdl2java -d 輸出目錄 -client WSDL 檔案 或 URL
+    - 可使用 ConvertTest.java 進行 request 和 response 的轉換
+    - 當使用 XmlUtil.xmlToBean 將 xml 轉為 java bean 時, 需注意 namespace 的設定和 List 的轉換要用 @JacksonXmlElementWrapper(useWrapping = false)
 - 打包指令
   - mvn clean package
 - 完成打包後流程:

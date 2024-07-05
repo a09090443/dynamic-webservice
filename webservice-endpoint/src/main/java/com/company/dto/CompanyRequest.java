@@ -49,6 +49,7 @@ import java.util.List;
 })
 public class CompanyRequest {
 
+    @XmlElement(namespace = "")
     protected Employees employees;
     @XmlElement(namespace = "company")
     protected String name;
@@ -153,6 +154,7 @@ public class CompanyRequest {
     })
     public static class Employees {
 
+        @XmlElement(namespace = "", nillable = true)
         protected List<Employee> employee;
 
         /**

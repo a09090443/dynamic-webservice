@@ -1,6 +1,6 @@
-package com.mockwebservice.dao;
+package com.dynamicwebservice.dao;
 
-import com.mockwebservice.jdbc.MockResponseJDBC;
+import com.dynamicwebservice.jdbc.MockResponseJDBC;
 import com.zipe.enums.ResourceEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;

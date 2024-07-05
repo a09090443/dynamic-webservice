@@ -1,4 +1,4 @@
-package com.mockwebservice.jdbc;
+package com.dynamicwebservice.jdbc;
 
 import com.zipe.jdbc.BaseJDBC;
 import org.springframework.stereotype.Repository;

@@ -1,6 +1,6 @@
-package com.mockwebservice.webservice;
+package com.dynamicwebservice.webservice;
 
-import com.mockwebservice.dao.MockResponseDao;
+import com.dynamicwebservice.dao.MockResponseDao;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public abstract class BaseWebservice {

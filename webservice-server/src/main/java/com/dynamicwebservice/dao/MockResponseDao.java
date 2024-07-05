@@ -25,14 +25,8 @@ public class MockResponseDao {
         ResourceEnum resource = ResourceEnum.SQL.getResource(MockResponseJDBC.SQL_SELECT_RESPONSE_CONTENT);
         Map<String, Object> paramMap = new HashMap<>();
         paramMap.put("publishUrl", publishUrl);
-        Conditions conditions = new Conditions();
-        if(StringUtils.isNotBlank(method)) {
-
-        }
-        conditions.equal("mr.METHOD", method);
-        conditions.equal("mr.METHOD", method);
-        conditions.equal("mr.CONDITION", condition);
-        conditions.equal("mr.IS_ACTIVE", "Y");
+        paramMap.put("method", method);
+        paramMap.put("condition", condition);
 
         try {
             return mockResponseJDBC.queryForObject(resource, paramMap, String.class);

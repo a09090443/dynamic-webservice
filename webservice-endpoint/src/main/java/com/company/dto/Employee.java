@@ -1,10 +1,13 @@
 
 package com.company.dto;
 
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlType;
+import lombok.Data;
 
 
 /**
@@ -38,6 +41,9 @@ public class Employee {
     protected String grander;
     @XmlElement(namespace = "employee")
     protected String name;
+
+    public Employee() {
+    }
 
     /**
      * ���o grander �S�ʪ���.

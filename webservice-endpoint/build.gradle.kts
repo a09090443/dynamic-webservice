@@ -23,6 +23,8 @@ dependencies {
     implementation("net.sf.jasperreports:jasperreports:6.20.6")
     implementation("com.github.librepdf:openpdf:2.0.2")
     implementation("org.eclipse.persistence:eclipselink:3.0.4")
+    implementation("org.glassfish.jaxb:jaxb-runtime:4.0.5")
+    implementation("jakarta.xml.bind:jakarta.xml.bind-api:4.0.2")
     implementation(files("src/main/lib/webservice-base-endpoint.jar"))
 
     compileOnly("org.projectlombok:lombok:1.18.32")

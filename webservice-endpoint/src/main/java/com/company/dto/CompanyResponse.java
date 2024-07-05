@@ -1,13 +1,16 @@
 
 package com.company.dto;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlElementWrapper;
 import jakarta.xml.bind.annotation.XmlType;
-
-import java.util.ArrayList;
-import java.util.List;
 
 
 /**
@@ -51,9 +54,10 @@ import java.util.List;
 })
 public class CompanyResponse {
 
-    @XmlElement(namespace = "company")
+    @XmlElement
     protected String address;
-    protected Employees employees;
+    @XmlElement(name = "employees", namespace = "")
+    protected Employees employees = new Employees();
     @XmlElement(namespace = "company")
     protected String name;
     @XmlElement(namespace = "company")
@@ -92,7 +96,7 @@ public class CompanyResponse {
      *
      */
     public Employees getEmployees() {
-        return employees = new Employees();
+        return employees;
     }
 
     /**
@@ -181,6 +185,9 @@ public class CompanyResponse {
     })
     public static class Employees {
 
+        @XmlElement(name="employee", namespace = "", nillable = true)
+        @JacksonXmlProperty(localName = "employee", namespace = "")
+        @JacksonXmlElementWrapper(useWrapping = false)
         protected List<Employee> employee;
 
         /**

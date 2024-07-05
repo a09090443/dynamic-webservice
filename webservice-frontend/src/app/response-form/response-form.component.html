@@ -28,10 +28,7 @@
 
     <mat-form-field class="example-form-field" style="flex: 1;">
       <mat-label>回應內容</mat-label>
-      <textarea matInput formControlName="responseContent"
-                [ngClass]="{'valid-json': isResponseContentValidJson && form.get('responseContent')?.value,
-                'invalid-json': !isResponseContentValidJson && form.get('responseContent')?.value}">
-      </textarea>
+      <textarea matInput formControlName="responseContent"></textarea>
       <button *ngIf="form.get('responseContent')?.value" mat-icon-button matSuffix aria-label="Clear" (click)="clearField('responseContent')">
         <mat-icon>close</mat-icon>
       </button>
@@ -40,9 +37,6 @@
     <div *ngIf="message" [ngClass]="messageType === 'success' ? 'success-message' : 'error-message'">
       {{ message }}
     </div>
-    <mat-hint *ngIf="form.get('responseContent')?.value" [ngClass]="isResponseContentValidJson ? 'success-message' : 'error-message'">
-      {{ isResponseContentValidJson ? '有效的 JSON' : '無效的 JSON' }}
-    </mat-hint>
   </form>
 </div>
 
