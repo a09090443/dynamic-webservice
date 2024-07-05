@@ -1,11 +1,11 @@
 package com.dynamicwebservice.controller;
 
 import com.dynamicwebservice.dto.EndpointDTO;
-import com.dynamicwebservice.dto.EndpointResponse;
-import com.dynamicwebservice.dto.JarFileResponse;
-import com.dynamicwebservice.dto.MockResponseRequest;
-import com.dynamicwebservice.dto.MockResponseResponse;
-import com.dynamicwebservice.dto.WebServiceRequest;
+import com.dynamicwebservice.dto.EndpointResponseDTO;
+import com.dynamicwebservice.dto.JarFileResponseDTO;
+import com.dynamicwebservice.dto.MockResponseRequestDTO;
+import com.dynamicwebservice.dto.MockResponseResponseDTO;
+import com.dynamicwebservice.dto.WebServiceRequestDTO;
 import com.dynamicwebservice.service.DynamicWebService;
 import com.zipe.annotation.ResponseResultBody;
 import com.zipe.dto.Result;
@@ -44,10 +44,10 @@ public class WebServiceController {
     }
 
     @GetMapping("/getEndpoints")
-    public Result<List<EndpointResponse>> getEndpoints() throws SQLException {
+    public Result<List<EndpointResponseDTO>> getEndpoints() throws SQLException {
         List<EndpointDTO> endpoints = dynamicWebService.getEndpoints();
-        List<EndpointResponse> endpointResponseList = endpoints.stream().map(endpointDTO -> {
-            EndpointResponse response = new EndpointResponse();
+        List<EndpointResponseDTO> endpointResponseList = endpoints.stream().map(endpointDTO -> {
+            EndpointResponseDTO response = new EndpointResponseDTO();
             BeanUtils.copyProperties(endpointDTO, response);
             return response;
         }).toList();
@@ -55,7 +55,7 @@ public class WebServiceController {
     }
 
     @PostMapping("/getResponseContent")
-    public Result<String> getResponseContent(@RequestBody MockResponseRequest request) {
+    public Result<String> getResponseContent(@RequestBody MockResponseRequestDTO request) {
         if (StringUtils.isBlank(request.getPublishUrl())) {
             return Result.failure(ResultStatus.BAD_REQUEST, "Publish URL is required");
         } else if (StringUtils.isBlank(request.getMethod())) {
@@ -68,16 +68,16 @@ public class WebServiceController {
     }
 
     @PostMapping("/getResponseList")
-    public Result<List<MockResponseResponse>> getResponseList(@RequestBody MockResponseRequest request) {
+    public Result<List<MockResponseResponseDTO>> getResponseList(@RequestBody MockResponseRequestDTO request) {
         if (StringUtils.isBlank(request.getPublishUrl())) {
             return Result.failure(ResultStatus.BAD_REQUEST);
         }
-        List<MockResponseResponse> mockResponseResponseList = dynamicWebService.getResponseList(request);
+        List<MockResponseResponseDTO> mockResponseResponseList = dynamicWebService.getResponseList(request);
         return Result.success(mockResponseResponseList);
     }
 
     @PostMapping("/saveWebService")
-    public Result<EndpointResponse> saveWebService(@RequestBody WebServiceRequest request) {
+    public Result<EndpointResponseDTO> saveWebService(@RequestBody WebServiceRequestDTO request) {
         log.info("Save web service: {}", request);
 
         if (StringUtils.isBlank(request.getPublishUrl())) {
@@ -106,28 +106,28 @@ public class WebServiceController {
             return Result.failure(ResultStatus.BAD_REQUEST);
         }
 
-        EndpointResponse response = new EndpointResponse();
+        EndpointResponseDTO response = new EndpointResponseDTO();
         BeanUtils.copyProperties(endpointDTO, response);
         return Result.success(response);
     }
 
     @PostMapping("/updateWebService")
-    public Result<EndpointResponse> updateWebService(@RequestBody WebServiceRequest request) {
+    public Result<EndpointResponseDTO> updateWebService(@RequestBody WebServiceRequestDTO request) {
         log.info("Update web service: {}", request);
         EndpointDTO endpointDTO;
         try {
             endpointDTO = Optional.ofNullable(
                     dynamicWebService.getEndpoint(request.getId())).orElseThrow(() -> new Exception("Endpoint not found"));
-
-            dynamicWebService.disabledJarFile(endpointDTO.getPublishUrl());
+            dynamicWebService.disabledWebService(endpointDTO.getPublishUrl(), false);
             BeanUtils.copyProperties(request, endpointDTO);
+            endpointDTO.setIsActive(false);
             dynamicWebService.updateWebService(endpointDTO);
         } catch (Exception e) {
             log.error("Update web service failed:{}", e.getMessage(), e);
             return Result.failure(ResultStatus.BAD_REQUEST);
         }
 
-        EndpointResponse response = new EndpointResponse();
+        EndpointResponseDTO response = new EndpointResponseDTO();
         BeanUtils.copyProperties(endpointDTO, response);
         return Result.success(response);
     }
@@ -141,7 +141,7 @@ public class WebServiceController {
     }
 
     @GetMapping("/switchWebService")
-    public ResponseEntity<String> switchWebService(@RequestParam String publishUrl, @RequestParam Boolean isActive) {
+    public Result<String> switchWebService(@RequestParam String publishUrl, @RequestParam Boolean isActive) {
         if (StringUtils.isNotBlank(publishUrl) && isActive != null) {
             try {
                 if (isActive) {
@@ -151,13 +151,14 @@ public class WebServiceController {
                 }
             } catch (Exception e) {
                 log.error("Switch endpoint failure, publishUrl:{}, isActive:{}", publishUrl, isActive, e);
+                return Result.failure();
             }
         }
-        return ResponseEntity.ok().body("Success");
+        return Result.success(StringUtils.EMPTY);
     }
 
     @PostMapping("/saveMockResponse")
-    public Result<MockResponseResponse> saveMockResponse(@RequestBody MockResponseRequest request) {
+    public Result<MockResponseResponseDTO> saveMockResponse(@RequestBody MockResponseRequestDTO request) {
         log.info("Save mock response: {}", request);
 
         if (StringUtils.isBlank(request.getPublishUrl())) {
@@ -176,14 +177,14 @@ public class WebServiceController {
         }
 
         dynamicWebService.saveMockResponse(request);
-        MockResponseResponse mockResponseResponse = new MockResponseResponse();
+        MockResponseResponseDTO mockResponseResponse = new MockResponseResponseDTO();
         BeanUtils.copyProperties(request, mockResponseResponse);
 
         return Result.success(mockResponseResponse);
     }
 
     @PostMapping("/updateResponse")
-    public Result<MockResponseResponse> updateResponse(@RequestBody MockResponseRequest request) {
+    public Result<MockResponseResponseDTO> updateResponse(@RequestBody MockResponseRequestDTO request) {
         log.info("Update response: {}", request);
         try {
             dynamicWebService.updateMockResponse(request);
@@ -192,7 +193,7 @@ public class WebServiceController {
             return Result.failure(ResultStatus.BAD_REQUEST);
         }
 
-        MockResponseResponse response = new MockResponseResponse();
+        MockResponseResponseDTO response = new MockResponseResponseDTO();
         BeanUtils.copyProperties(request, response);
         return Result.success(response);
     }
@@ -200,9 +201,9 @@ public class WebServiceController {
     @GetMapping("/switchResponse")
     public Result<String> switchResponse(@RequestParam String id, @RequestParam Boolean isActive) {
         if (StringUtils.isNotBlank(id) && isActive != null) {
-            try{
+            try {
                 dynamicWebService.switchMockResponse(id, isActive);
-            }catch (Exception e){
+            } catch (Exception e) {
                 log.error("Switch endpoint failure, id:{}, isActive:{}", id, isActive, e);
             }
         }
@@ -210,7 +211,7 @@ public class WebServiceController {
     }
 
     @PostMapping("/uploadJarFile")
-    public Result<JarFileResponse> uploadJarFile(@RequestParam("file") MultipartFile file) {
+    public Result<JarFileResponseDTO> uploadJarFile(@RequestParam("file") MultipartFile file) {
         try {
             // 檢查檔案是否為空或不是以 .jar 結尾
             if (file.isEmpty() || !Objects.requireNonNull(file.getOriginalFilename()).endsWith(".jar")) {
@@ -219,7 +220,7 @@ public class WebServiceController {
             }
 
             // 執行實際的檔案上傳操作，這裡假設使用 dynamicWebService 來處理上傳
-            JarFileResponse jarFileResponse = dynamicWebService.uploadJarFile(file.getInputStream());
+            JarFileResponseDTO jarFileResponse = dynamicWebService.uploadJarFile(file.getInputStream());
 
             // 返回成功上傳的訊息和新檔案編號
             return Result.success(jarFileResponse);

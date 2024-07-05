@@ -3,7 +3,7 @@ package com.dynamicwebservice.dto;
 import lombok.Data;
 
 @Data
-public class WebServiceRequest {
+public class WebServiceRequestDTO {
     private String id;
 
     private String beanName;

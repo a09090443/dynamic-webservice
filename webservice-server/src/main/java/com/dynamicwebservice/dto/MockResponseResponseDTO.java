@@ -3,7 +3,7 @@ package com.dynamicwebservice.dto;
 import lombok.Data;
 
 @Data
-public class MockResponseResponse {
+public class MockResponseResponseDTO {
 
     private String id;
 

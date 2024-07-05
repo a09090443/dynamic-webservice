@@ -1,9 +1,9 @@
 package com.dynamicwebservice.service.impl;
 
 import com.dynamicwebservice.dto.EndpointDTO;
-import com.dynamicwebservice.dto.JarFileResponse;
-import com.dynamicwebservice.dto.MockResponseRequest;
-import com.dynamicwebservice.dto.MockResponseResponse;
+import com.dynamicwebservice.dto.JarFileResponseDTO;
+import com.dynamicwebservice.dto.MockResponseRequestDTO;
+import com.dynamicwebservice.dto.MockResponseResponseDTO;
 import com.dynamicwebservice.entity.EndpointEntity;
 import com.dynamicwebservice.entity.JarFileEntity;
 import com.dynamicwebservice.entity.MockResponseEntity;
@@ -112,16 +112,16 @@ public class DynamicWebServiceImpl implements DynamicWebService {
     }
 
     @Override
-    public String getResponseContent(MockResponseRequest request) {
+    public String getResponseContent(MockResponseRequestDTO request) {
         MockResponseEntity mockResponseEntity = mockResponseRepository.findByIdPublishUrlAndIdMethodAndIdConditionAndIsActive(request.getPublishUrl(), request.getMethod(), request.getCondition(), Boolean.TRUE);
         return Optional.ofNullable(mockResponseEntity).map(MockResponseEntity::getResponseContent).orElse("");
     }
 
     @Override
-    public List<MockResponseResponse> getResponseList(MockResponseRequest request) {
+    public List<MockResponseResponseDTO> getResponseList(MockResponseRequestDTO request) {
         List<MockResponseEntity> mockResponseEntity = mockResponseRepository.findByIdPublishUrl(request.getPublishUrl());
         return mockResponseEntity.stream().map(mockResponse -> {
-            MockResponseResponse response = new MockResponseResponse();
+            MockResponseResponseDTO response = new MockResponseResponseDTO();
             response.setId(mockResponse.getUuId());
             response.setPublishUrl(mockResponse.getId().getPublishUrl());
             response.setMethod(mockResponse.getId().getMethod());
@@ -171,7 +171,7 @@ public class DynamicWebServiceImpl implements DynamicWebService {
     }
 
     @Override
-    public void saveMockResponse(MockResponseRequest request) {
+    public void saveMockResponse(MockResponseRequestDTO request) {
         MockResponseEntity mockResponseEntity = new MockResponseEntity();
         mockResponseEntity.setUuId(UUID.randomUUID().toString());
         mockResponseEntity.getId().setPublishUrl(request.getPublishUrl());
@@ -183,7 +183,7 @@ public class DynamicWebServiceImpl implements DynamicWebService {
     }
 
     @Override
-    public void updateMockResponse(MockResponseRequest request) {
+    public void updateMockResponse(MockResponseRequestDTO request) {
         ResourceEnum resource = ResourceEnum.SQL.getResource(MockResponseJDBC.SQL_UPDATE_RESPONSE);
         Map<String, Object> paramMap = new HashMap<>();
         paramMap.put("publishUrl", request.getPublishUrl());
@@ -210,7 +210,7 @@ public class DynamicWebServiceImpl implements DynamicWebService {
     }
 
     @Override
-    public JarFileResponse uploadJarFile(InputStream inputStream) throws IOException {
+    public JarFileResponseDTO uploadJarFile(InputStream inputStream) throws IOException {
 
         // 確保上傳目錄存在
         Path uploadPath = Paths.get(jarFileDir);
@@ -228,7 +228,7 @@ public class DynamicWebServiceImpl implements DynamicWebService {
         jarFileEntity.setStatus(JarFileStatus.INACTIVE);
         jarFileEntity = jarFileRepository.save(jarFileEntity);
 
-        JarFileResponse jarFileResponse = new JarFileResponse();
+        JarFileResponseDTO jarFileResponse = new JarFileResponseDTO();
         jarFileResponse.setJarFileId(jarFileEntity.getId());
         jarFileResponse.setJarFileName(jarFileEntity.getName());
         return jarFileResponse;

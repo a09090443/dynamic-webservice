@@ -3,7 +3,7 @@ package com.dynamicwebservice.dto;
 import lombok.Data;
 
 @Data
-public class EndpointResponse {
+public class EndpointResponseDTO {
     public String id;
     public String publishUrl;
     public String beanName;

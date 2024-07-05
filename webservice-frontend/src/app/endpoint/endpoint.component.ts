@@ -204,7 +204,7 @@ export class EndpointComponent implements OnInit, AfterViewInit {
       this.endpointService.switchWebservice(row.publishUrl, event.checked).then(
         (response: any) => {
           console.log('Switched web service:', response.data);
-          // Handle success
+          row.isActive = event.checked;
         },
         (error) => {
           console.error('Error switching web service:', error);
