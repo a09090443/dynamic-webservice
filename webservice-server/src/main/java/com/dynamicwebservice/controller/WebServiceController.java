@@ -123,7 +123,7 @@ public class WebServiceController {
             dynamicWebService.disabledWebService(endpointDTO.getPublishUrl(), false);
 
             BeanUtils.copyProperties(request, newEndpointDTO);
-            endpointDTO.setIsActive(false);
+            newEndpointDTO.setIsActive(false);
             dynamicWebService.updateWebService(newEndpointDTO);
 
             if (!endpointDTO.getPublishUrl().equals(newEndpointDTO.getPublishUrl())) {
