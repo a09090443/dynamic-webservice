@@ -11,7 +11,7 @@ import javax.xml.transform.TransformerException;
 import java.io.IOException;
 
 class ConvertTest {
-    @Test
+    //    @Test
     void xmlToResponse() throws SOAPException, IOException, TransformerException {
         String soapResXml = SoapUtil.getFromSoapXml(mockXml(), "ns4:getCompanyResponse");
         GetCompanyResponse response = XmlUtil.xmlToBean(soapResXml, GetCompanyResponse.class);
@@ -19,7 +19,7 @@ class ConvertTest {
         Assertions.assertNotNull(response.getCompanyResponse());
     }
 
-    //    @Test
+    @Test
     void requestToJson() throws IOException, SOAPException, TransformerException {
         String soapResXml = SoapUtil.getFromSoapXml(mockRequestJson(), "ser:getCompany");
         GetCompany request = XmlUtil.xmlToBean(soapResXml, GetCompany.class);
@@ -42,7 +42,7 @@ class ConvertTest {
                     <soapenv:Body>
                        <ser:getCompany>
                           <ser:CompanyRequest>
-                             <com:name>Gary</com:name>
+                             <com:name>Jen</com:name>
                              <com:taxId>123456789</com:taxId>
                           </ser:CompanyRequest>
                        </ser:getCompany>
