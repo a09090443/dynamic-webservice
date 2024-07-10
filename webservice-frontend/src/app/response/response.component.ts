@@ -1,5 +1,5 @@
 import {AfterViewInit, Component, OnInit, ViewChild} from '@angular/core';
-import {DatePipe, NgForOf, NgIf, NgSwitch, NgSwitchCase, NgSwitchDefault} from "@angular/common";
+import {DatePipe, NgForOf, NgIf, NgSwitch, NgSwitchCase, NgSwitchDefault, SlicePipe} from "@angular/common";
 import {HeaderComponent} from "../header/header.component";
 import {MatButtonModule} from "@angular/material/button";
 import {MatTableDataSource, MatTableModule} from "@angular/material/table";
@@ -19,6 +19,7 @@ import {MatCardModule} from "@angular/material/card";
 import {MatDatepickerModule} from "@angular/material/datepicker";
 import {MatNativeDateModule} from "@angular/material/core";
 import {HttpClientModule} from "@angular/common/http";
+import {ContentComponent} from "../content/content.component";
 
 const COLUMNS_SCHEMA = [
   {
@@ -81,7 +82,8 @@ const COLUMNS_SCHEMA = [
     NgForOf,
     HeaderComponent,
     HttpClientModule,
-    MatSlideToggle
+    MatSlideToggle,
+    SlicePipe
   ],
   templateUrl: './response.component.html',
   styleUrl: './response.component.css'
@@ -251,5 +253,11 @@ export class ResponseComponent implements OnInit, AfterViewInit {
       // 使用者點擊取消，回退切換狀態
       event.source.checked = !event.checked;
     }
+  }
+
+  openFullContentDialog(content: string) {
+    this.dialog.open(ContentComponent, {
+      data: { content },
+    });
   }
 }

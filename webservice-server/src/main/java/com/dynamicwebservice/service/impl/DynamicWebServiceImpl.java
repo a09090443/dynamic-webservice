@@ -176,6 +176,8 @@ public class DynamicWebServiceImpl implements DynamicWebService {
         mockResponseEntity.setResponseContent(request.getResponseContent());
         mockResponseEntity.setIsActive(Boolean.FALSE);
         mockResponseRepository.save(mockResponseEntity);
+        request.setId(mockResponseEntity.getUuId());
+
     }
 
     @Override

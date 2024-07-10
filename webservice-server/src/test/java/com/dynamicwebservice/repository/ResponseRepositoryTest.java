@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import tw.com.webcomm.base.TestBase;
 
-public class ResponseRepositoryTest extends TestBase {
+class ResponseRepositoryTest extends TestBase {
 
     @Autowired
     public MockResponseDao mockResponseDao;

@@ -37,8 +37,9 @@ dependencies {
 }
 
 tasks.register('buildAngular', Exec) {
-    workingDir '../webservice-frontend'
-    commandLine '../tools/node-v20.15.0-win-x64/npm.cmd', 'run', 'build', '--', '--configuration', 'production', '--base-href', '/webservice-server/'
+    workingDir file('../webservice-frontend').absolutePath
+    environment 'PATH', file('../tools/node-v20.15.0-win-x64').absolutePath + File.pathSeparator + System.env.PATH
+    commandLine 'npm.cmd', 'run', 'build', '--', '--configuration', 'production', '--base-href', '/webservice-server/'
 }
 tasks.register('copyAngularBuild', Copy) {
     dependsOn 'buildAngular'
@@ -53,9 +54,6 @@ tasks.named('processResources') {
 bootJar {
     dependsOn 'copyAngularBuild'
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-//    from('src/main/webapp') {
-//        into 'META-INF/resources'
-//    }
 }
 
 tasks.named('test') {

@@ -29,7 +29,7 @@
                         [aria-label]="checkboxLabel()">
           </mat-checkbox>
         </th>
-        <td mat-cell *matCellDef="let row">
+        <td mat-cell *matCellDef="let row" [style.width]="column.width">
           <mat-checkbox (click)="$event.stopPropagation()"
                         (change)="$event ? selection.toggle(row) : null"
                         [checked]="selection.isSelected(row)"
@@ -38,8 +38,8 @@
         </td>
       </span>
 
-      <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ column.label }}</th>
-      <td mat-cell *matCellDef="let element; let n = index;">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header [style.width]="column.width">{{ column.label }}</th>
+      <td mat-cell *matCellDef="let element; let n = index;" [style.width]="column.width">
         <div [ngSwitch]="column.type" *ngIf="!element.isEdit">
           <div class="btn-edit" *ngSwitchCase="'isEdit'">
             <button mat-button class="row-btn" (click)="openResponseForm(element)">編輯</button>&nbsp;&nbsp;
@@ -54,8 +54,24 @@
           <span *ngSwitchCase="'boolean'">
           <mat-slide-toggle [checked]="element[column.key]" (change)="onSwitchChange($event, element)"></mat-slide-toggle>
           </span>
-          <span *ngSwitchDefault>
-          {{ element[column.key] }}
+          <span *ngSwitchCase="'text'" class="response-condition">
+            <ng-container *ngIf="column.key === 'condition'; else responseContent">
+              {{ element[column.key] | slice:0:150 }}
+              <div *ngIf="element[column.key]?.length > 150">
+                  <a class="more-link" matTooltip="顯示完整內容" (click)="openFullContentDialog(element[column.key])">顯示更多</a>
+              </div>
+            </ng-container>
+            <ng-template #responseContent>
+              <ng-container *ngIf="column.key === 'responseContent'; else defaultContent">
+                {{ element[column.key] | slice:0:300 }}
+                <div *ngIf="element[column.key]?.length > 300">
+                  <a class="more-link" matTooltip="顯示完整內容" (click)="openFullContentDialog(element[column.key])">顯示更多</a>
+                </div>
+              </ng-container>
+            </ng-template>
+            <ng-template #defaultContent>
+              {{ element[column.key] }}
+            </ng-template>
           </span>
         </div>
       </td>

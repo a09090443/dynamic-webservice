@@ -202,3 +202,13 @@ p {
 .row-btn:hover:after {
   transition-delay: 0s, 0.25s, 0s;
 }
+/* styles.css 或 table.component.css */
+.more-link {
+  color: blue;
+  cursor: pointer;
+  text-decoration: underline;
+}
+/* styles.css 或 component.css */
+.response-condition {
+  word-break: break-word; /* 在單詞內斷行 */
+}
