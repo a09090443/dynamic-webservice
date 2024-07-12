@@ -50,35 +50,48 @@ tasks.register('copyAngularBuild', Copy) {
 
 def env = project.hasProperty('env') ? project.property('env') : 'dev'
 
-tasks.named('bootJar') {
-    dependsOn 'copyAngularBuild'
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+tasks.register('forceUpdateProperties') {
+    doLast {
 
-    doFirst {
-        // Rename resources
-        copy {
-            from layout.buildDirectory.dir("resources/main")
-            into layout.buildDirectory.dir("resources/main")
-            include "resources_${env}.properties"
-            rename "resources_${env}.properties", 'resources.properties'
-        }
 
-        // Rename data source
-        copy {
-            from layout.buildDirectory.dir("resources/main")
-            into layout.buildDirectory.dir("resources/main")
-            include "data-source_${env}.properties"
-            rename "data-source_${env}.properties", 'data-source.properties'
-        }
 
-        // Delete unnecessary files
-        delete {
-            delete fileTree(layout.buildDirectory.dir("resources/main")) {
-                include '**/resources_*.properties'
-                include '**/data-source_*.properties'
+        println "Forcing update of properties files for environment: ${env}"
+
+        def resourcesDir = layout.buildDirectory.dir("resources/main").get().asFile
+        resourcesDir.mkdirs() // 確保目錄存在
+
+        // 強制更新 resources.properties
+        def resourcesFile = new File(resourcesDir, "resources.properties")
+        resourcesFile.delete()
+        file("src/main/resources/resources_${env}.properties").withInputStream { input ->
+            resourcesFile.withOutputStream { output ->
+                output << input
             }
         }
+
+        // 強制更新 data-source.properties
+        def dataSourceFile = new File(resourcesDir, "data-source.properties")
+        dataSourceFile.delete()
+        file("src/main/resources/data-source_${env}.properties").withInputStream { input ->
+            dataSourceFile.withOutputStream { output ->
+                output << input
+            }
+        }
+
+        // 刪除其他環境特定文件
+        resourcesDir.listFiles().each { file ->
+            if (file.name.startsWith("resources_") || file.name.startsWith("data-source_")) {
+                file.delete()
+            }
+        }
+
+        println "Properties files have been forcibly updated."
     }
+}
+
+tasks.named('bootJar') {
+    dependsOn 'forceUpdateProperties'
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
 
 tasks.withType(JavaCompile).configureEach {
