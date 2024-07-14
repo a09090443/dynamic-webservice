@@ -19,7 +19,7 @@ public interface DynamicWebService {
     List<MockResponseResponseDTO> getResponseList(MockResponseRequestDTO request);
     void saveWebService(EndpointDTO endpointDTO) throws FileNotFoundException;
     void updateWebService(EndpointDTO endpointDTO) throws FileNotFoundException;
-    void enabledWebService(String publishUrl) throws MalformedURLException, ClassNotFoundException, FileNotFoundException;
+    void enabledWebService(String publishUrl) throws Exception;
     void disabledWebService(String publicUrl, Boolean isDeleted) throws Exception;
     void disabledJarFile(String publishUrl) throws Exception;
     void removeWebService(String publishUrl) throws Exception;

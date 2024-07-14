@@ -8,6 +8,7 @@ import com.dynamicwebservice.entity.EndpointEntity;
 import com.dynamicwebservice.entity.JarFileEntity;
 import com.dynamicwebservice.entity.MockResponseEntity;
 import com.dynamicwebservice.enums.JarFileStatus;
+import com.dynamicwebservice.exception.WebserviceException;
 import com.dynamicwebservice.jdbc.EndPointJDBC;
 import com.dynamicwebservice.jdbc.MockResponseJDBC;
 import com.dynamicwebservice.model.WebServiceModel;
@@ -20,9 +21,9 @@ import com.zipe.enums.ResourceEnum;
 import com.zipe.jdbc.criteria.Conditions;
 import com.zipe.util.time.DateTimeUtils;
 import jakarta.persistence.EntityExistsException;
-import jakarta.persistence.OptimisticLockException;
 import jakarta.persistence.PersistenceException;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.apache.cxf.Bus;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,7 +34,6 @@ import org.springframework.stereotype.Service;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -113,12 +113,23 @@ public class DynamicWebServiceImpl implements DynamicWebService {
 
     @Override
     public String getResponseContent(MockResponseRequestDTO request) {
+
+        if (StringUtils.isBlank(request.getPublishUrl())) {
+            throw new WebserviceException("Publish URL is required");
+        } else if (StringUtils.isBlank(request.getMethod())) {
+            throw new WebserviceException("Method is required");
+        } else if (StringUtils.isBlank(request.getCondition())) {
+            throw new WebserviceException("Condition is required");
+        }
         MockResponseEntity mockResponseEntity = mockResponseRepository.findByIdPublishUrlAndIdMethodAndIdConditionAndIsActive(request.getPublishUrl(), request.getMethod(), request.getCondition(), Boolean.TRUE);
         return Optional.ofNullable(mockResponseEntity).map(MockResponseEntity::getResponseContent).orElse("");
     }
 
     @Override
     public List<MockResponseResponseDTO> getResponseList(MockResponseRequestDTO request) {
+        if (StringUtils.isBlank(request.getPublishUrl())) {
+            throw new WebserviceException("Publish URL is required");
+        }
         List<MockResponseEntity> mockResponseEntity = mockResponseRepository.findByIdPublishUrl(request.getPublishUrl());
         return mockResponseEntity.stream().map(mockResponse -> {
             MockResponseResponseDTO response = new MockResponseResponseDTO();
@@ -197,6 +208,7 @@ public class DynamicWebServiceImpl implements DynamicWebService {
             log.error("method:{}", request.getMethod());
             log.error("condition:{}", request.getCondition());
             log.error("IncorrectResultSizeDataAccessException:{}", e.getMessage(), e);
+            throw new WebserviceException("更新 Mock Response 失敗");
         }
     }
 
@@ -213,6 +225,7 @@ public class DynamicWebServiceImpl implements DynamicWebService {
             log.error("oriPublishUrl:{}", oriPublishUrl);
             log.error("newPublishUrl:{}", newPublishUrl);
             log.error("IncorrectResultSizeDataAccessException:{}", e.getMessage(), e);
+            throw new WebserviceException("更新 Mock Response 失敗");
         }
     }
 
@@ -226,6 +239,7 @@ public class DynamicWebServiceImpl implements DynamicWebService {
         } catch (IncorrectResultSizeDataAccessException e) {
             log.error("id:{}", id);
             log.error("IncorrectResultSizeDataAccessException:{}", e.getMessage(), e);
+            throw new WebserviceException("刪除 Mock Response 失敗");
         }
     }
 
@@ -233,7 +247,11 @@ public class DynamicWebServiceImpl implements DynamicWebService {
     public void switchMockResponse(String id, Boolean status) {
         MockResponseEntity mockResponseEntity = mockResponseRepository.findByUuId(id);
         mockResponseEntity.setIsActive(status);
-        mockResponseRepository.save(mockResponseEntity);
+        try {
+            mockResponseRepository.save(mockResponseEntity);
+        } catch (Exception e) {
+            throw new WebserviceException("切換 Mock Response 狀態失敗");
+        }
     }
 
     @Override
@@ -262,25 +280,20 @@ public class DynamicWebServiceImpl implements DynamicWebService {
     }
 
     @Override
-    public void enabledWebService(String publishUrl) throws MalformedURLException, ClassNotFoundException, FileNotFoundException {
+    public void enabledWebService(String publishUrl) throws FileNotFoundException {
         EndpointEntity endpointEntity = endpointRepository.findById(publishUrl).orElseThrow(() -> new FileNotFoundException("找不到對應的 Web Service"));
         JarFileEntity jarFileEntity = jarFileRepository.findById(endpointEntity.getJarFileId()).orElseThrow(() -> new FileNotFoundException("找不到對應的 Jar 檔案"));
         WebServiceHandler registerWebService = new WebServiceHandler();
         EndpointDTO endpointDTO = new EndpointDTO();
-        BeanUtils.copyProperties(endpointEntity, endpointDTO);
-        registerWebService.registerWebService(endpointDTO, context, jarFileEntity.getName());
-        endpointEntity.setIsActive(Boolean.TRUE);
+
         try {
+            BeanUtils.copyProperties(endpointEntity, endpointDTO);
+            registerWebService.registerWebService(endpointDTO, context, jarFileEntity.getName());
+            endpointEntity.setIsActive(Boolean.TRUE);
             endpointRepository.save(endpointEntity);
-        } catch (EntityExistsException e) {
-            // 處理實體已經存在的異常
-            throw new EntityExistsException("實體已經存在：" + e.getMessage());
-        } catch (OptimisticLockException e) {
-            // 處理樂觀鎖定失敗的異常
-            throw new OptimisticLockException("樂觀鎖定失敗：" + e.getMessage());
-        } catch (PersistenceException e) {
-            // 處理其他持久化異常
-            throw new PersistenceException("持久化操作失敗：" + e.getMessage());
+        } catch (RuntimeException | IOException | ClassNotFoundException e) {
+            log.error("Web Service 註冊服務:{}, 失敗", endpointEntity.getBeanName(), e);
+            throw new WebserviceException("啟動 Webservice 失敗");
         }
 
     }
@@ -295,13 +308,14 @@ public class DynamicWebServiceImpl implements DynamicWebService {
             endpointEntity.setIsActive(Boolean.FALSE);
             jarFileEntity.setStatus(JarFileStatus.INACTIVE);
             jarFileRepository.save(jarFileEntity);
-            if (isDeleted) {
+            if (Boolean.TRUE.equals(isDeleted)) {
                 endpointRepository.delete(endpointEntity);
             } else {
                 endpointRepository.save(endpointEntity);
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            log.error("Web Service 關閉服務:{}, 失敗", endpointEntity.getBeanName(), e);
+            throw new WebserviceException("關閉 Webservice 失敗");
         }
     }
 
@@ -318,13 +332,20 @@ public class DynamicWebServiceImpl implements DynamicWebService {
                 jarFileRepository.save(jarFileEntity);
             } catch (FileNotFoundException e) {
                 log.error(e.getMessage());
+                throw new WebserviceException("關閉 Jar 檔案失敗");
             }
         });
     }
 
     @Override
     public void removeWebService(String publishUrl) throws Exception {
-        this.disabledWebService(publishUrl, true);
+
+        try {
+            this.disabledWebService(publishUrl, true);
+        } catch (FileNotFoundException e) {
+            log.error("移除 Web Service 失敗:{}", e.getMessage(), e);
+            throw new WebserviceException("移除 Web Service 失敗");
+        }
     }
 
 }

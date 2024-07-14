@@ -9,25 +9,24 @@ import org.apache.cxf.endpoint.ServerRegistry;
 import org.apache.cxf.jaxws.EndpointImpl;
 import org.springframework.context.ApplicationContext;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
 @Slf4j
 public class WebServiceHandler {
-    public void registerWebService(EndpointDTO endpointDTO, ApplicationContext context, String fileName) throws MalformedURLException, ClassNotFoundException {
+    public void registerWebService(EndpointDTO endpointDTO, ApplicationContext context, String fileName) throws IOException, ClassNotFoundException {
 
         String jarPath = "file:" + context.getEnvironment().getProperty("jar.file.dir") + fileName;
-        CustomClassLoader loader = new CustomClassLoader(new URL[]{new URL(jarPath)}, this.getClass().getClassLoader());
         DynamicBeanUtil dynamicBeanUtil = new DynamicBeanUtil(context);
-        EndpointImpl endpoint;
-        try {
+        try (CustomClassLoader loader = new CustomClassLoader(new URL[]{new URL(jarPath)}, this.getClass().getClassLoader())) {
             Class<?> loadedClass = loader.loadClass(endpointDTO.getClassPath());
             this.setBeanName(context, endpointDTO.getBeanName(), loadedClass);
-
+            EndpointImpl endpoint;
             endpoint = new EndpointImpl(context.getBean(Bus.class), dynamicBeanUtil.getBean(endpointDTO.getBeanName(), loadedClass));
             endpoint.publish(StringConstant.SLASH + endpointDTO.getPublishUrl());
             log.info("Web Service 註冊服務:{}, 對應 URI:{}", endpointDTO.getBeanName(), endpointDTO.getPublishUrl());
-        } catch (Exception e) {
+        } catch (ClassNotFoundException e) {
             log.error("Web Service 註冊服務:{}, 失敗", endpointDTO.getBeanName(), e);
             throw e;
         }
@@ -45,17 +44,21 @@ public class WebServiceHandler {
                     serverRegistry.getServers().remove(server);
                 });
         String jarPath = "file:" + context.getEnvironment().getProperty("jar.file.dir") + jarName;
-        CustomClassLoader loader;
-        try {
-            loader = new CustomClassLoader(new URL[]{new URL(jarPath)}, this.getClass().getClassLoader());
+//        CustomClassLoader loader;
+//        try {
+//            loader = new CustomClassLoader(new URL[]{new URL(jarPath)}, this.getClass().getClassLoader());
+//            loader.unloadJarFile(new URL(jarPath));
+//
+//        } catch (MalformedURLException e) {
+//            throw new RuntimeException(e);
+//        } finally {
+//            loader = null; // Set the class loader to null
+//        }
+        try (CustomClassLoader loader = new CustomClassLoader(new URL[]{new URL(jarPath)}, this.getClass().getClassLoader())) {
             loader.unloadJarFile(new URL(jarPath));
-
-        } catch (MalformedURLException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
-        } finally {
-            loader = null; // Set the class loader to null
         }
-
     }
 
     private void setBeanName(ApplicationContext context, String beanName, Class<?> clazz) {

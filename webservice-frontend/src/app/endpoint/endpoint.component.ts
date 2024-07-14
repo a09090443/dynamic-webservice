@@ -19,6 +19,7 @@ import {EndpointFormComponent} from "../endpoint-form/endpoint-form.component";
 import {EndpointService} from "../service/endpoint.service";
 import {MatSlideToggle} from "@angular/material/slide-toggle";
 import {Router} from "@angular/router";
+import {ErrorDialogComponent} from "../error-dialog/error-dialog.component";
 
 const COLUMNS_SCHEMA = [
   {
@@ -238,8 +239,10 @@ export class EndpointComponent implements OnInit, AfterViewInit {
           row.isActive = event.checked;
         },
         (error) => {
-          console.error('Error switching web service:', error);
-          // Handle error
+          this.dialog.open(ErrorDialogComponent, {
+            width: '600px',
+            data: error.error,
+          });
         }
       );
     } else {

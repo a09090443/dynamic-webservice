@@ -6,6 +6,7 @@ import com.dynamicwebservice.dto.JarFileResponseDTO;
 import com.dynamicwebservice.dto.MockResponseRequestDTO;
 import com.dynamicwebservice.dto.MockResponseResponseDTO;
 import com.dynamicwebservice.dto.WebServiceRequestDTO;
+import com.dynamicwebservice.exception.WebserviceException;
 import com.dynamicwebservice.service.DynamicWebService;
 import com.zipe.annotation.ResponseResultBody;
 import com.zipe.dto.Result;
@@ -56,22 +57,12 @@ public class WebServiceController {
 
     @PostMapping("/getResponseContent")
     public Result<String> getResponseContent(@RequestBody MockResponseRequestDTO request) {
-        if (StringUtils.isBlank(request.getPublishUrl())) {
-            return Result.failure(ResultStatus.BAD_REQUEST, "Publish URL is required");
-        } else if (StringUtils.isBlank(request.getMethod())) {
-            return Result.failure(ResultStatus.BAD_REQUEST, "Method is required");
-        } else if (StringUtils.isBlank(request.getCondition())) {
-            return Result.failure(ResultStatus.BAD_REQUEST, "Condition is required");
-        }
         String content = dynamicWebService.getResponseContent(request);
         return Result.success(content);
     }
 
     @PostMapping("/getResponseList")
     public Result<List<MockResponseResponseDTO>> getResponseList(@RequestBody MockResponseRequestDTO request) {
-        if (StringUtils.isBlank(request.getPublishUrl())) {
-            return Result.failure(ResultStatus.BAD_REQUEST);
-        }
         List<MockResponseResponseDTO> mockResponseResponseList = dynamicWebService.getResponseList(request);
         return Result.success(mockResponseResponseList);
     }
@@ -119,7 +110,7 @@ public class WebServiceController {
 
         try {
             endpointDTO = Optional.ofNullable(
-                    dynamicWebService.getEndpoint(request.getId())).orElseThrow(() -> new Exception("Endpoint not found"));
+                    dynamicWebService.getEndpoint(request.getId())).orElseThrow(() -> new WebserviceException("Endpoint not found"));
             dynamicWebService.disabledWebService(endpointDTO.getPublishUrl(), false);
 
             BeanUtils.copyProperties(request, newEndpointDTO);
@@ -150,17 +141,12 @@ public class WebServiceController {
     }
 
     @GetMapping("/switchWebService")
-    public Result<String> switchWebService(@RequestParam String publishUrl, @RequestParam Boolean isActive) {
+    public Result<String> switchWebService(@RequestParam String publishUrl, @RequestParam Boolean isActive) throws Exception {
         if (StringUtils.isNotBlank(publishUrl) && isActive != null) {
-            try {
-                if (isActive) {
-                    dynamicWebService.enabledWebService(publishUrl);
-                } else {
-                    dynamicWebService.disabledWebService(publishUrl, false);
-                }
-            } catch (Exception e) {
-                log.error("Switch endpoint failure, publishUrl:{}, isActive:{}", publishUrl, isActive, e);
-                return Result.failure();
+            if (isActive) {
+                dynamicWebService.enabledWebService(publishUrl);
+            } else {
+                dynamicWebService.disabledWebService(publishUrl, false);
             }
         }
         return Result.success(StringUtils.EMPTY);
