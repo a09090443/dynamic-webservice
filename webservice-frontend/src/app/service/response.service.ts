@@ -2,6 +2,7 @@ import {Injectable} from '@angular/core';
 import {HttpClient, HttpErrorResponse, HttpParams} from "@angular/common/http";
 import {catchError, firstValueFrom, Observable, throwError} from "rxjs";
 import {Response} from "../model/response";
+import { config } from '../config';
 
 @Injectable({
   providedIn: 'root'
@@ -13,19 +14,19 @@ export class ResponseService {
 
   fetchData(publishUrl: string): Promise<any> {
     const body = {publishUrl: publishUrl};
-    return firstValueFrom(this.http.post('http://localhost:8080/webservice-server/ws/getResponseList', body));
+    return firstValueFrom(this.http.post(`${config.apiUrl}/mockwebservice/ws/getResponseList`, body));
   }
 
   saveFormData(formData: any): Promise<any> {
-    return firstValueFrom(this.http.post<any>('http://localhost:8080/webservice-server/ws/saveMockResponse', formData));
+    return firstValueFrom(this.http.post<any>(`${config.apiUrl}/mockwebservice/ws/saveMockResponse`, formData));
   }
 
   updateFormData(formData: any): Promise<any> {
-    return firstValueFrom(this.http.post<any>('http://localhost:8080/webservice-server/ws/updateResponse', formData));
+    return firstValueFrom(this.http.post<any>(`${config.apiUrl}/mockwebservice/ws/updateResponse`, formData));
   }
 
   async deleteResponse(ids: string[]): Promise<any> {
-    return await firstValueFrom(this.http.request('delete', 'http://localhost:8080/webservice-server/ws/deleteResponse', {
+    return await firstValueFrom(this.http.request('delete', `${config.apiUrl}/mockwebservice/ws/deleteResponse`, {
       body: ids
     }).pipe(
       catchError(this.handleError)
@@ -36,7 +37,7 @@ export class ResponseService {
     const params = new HttpParams()
       .set('id', row.id)
       .set('isActive', isActive.toString());
-    return await firstValueFrom(this.http.get('http://localhost:8080/webservice-server/ws/switchResponse', { params }));
+    return await firstValueFrom(this.http.get(`${config.apiUrl}/mockwebservice/ws/switchResponse`, { params }));
   }
 
   private handleError(error: HttpErrorResponse): Observable<string> {

@@ -37,24 +37,26 @@ dependencies {
 }
 
 tasks.register('buildAngular', Exec) {
-    workingDir = file('../webservice-frontend').absolutePath
+    workingDir file('../mockwebservice-frontend').absolutePath
     environment 'PATH', file('../tools/node-v20.15.0-win-x64').absolutePath + File.pathSeparator + System.env.PATH
-    commandLine 'npm.cmd', 'run', 'build', '--', '--configuration', 'production', '--base-href', '/webservice-server/'
+    def angularEnv = project.hasProperty('env') && project.property('env') == 'pro' ? 'production' : 'development'
+    commandLine 'npm.cmd', 'run', 'build', '--', '--configuration', angularEnv, '--base-href', '/mockwebservice/'
 }
 
 tasks.register('copyAngularBuild', Copy) {
     dependsOn 'buildAngular'
-    from '../webservice-frontend/dist'
+    from '../mockwebservice-frontend/dist'
     into 'src/main/resources/static'
+}
+
+tasks.named('processResources') {
+    dependsOn 'copyAngularBuild'
 }
 
 def env = project.hasProperty('env') ? project.property('env') : 'dev'
 
 tasks.register('forceUpdateProperties') {
     doLast {
-
-
-
         println "Forcing update of properties files for environment: ${env}"
 
         def resourcesDir = layout.buildDirectory.dir("resources/main").get().asFile
@@ -102,8 +104,4 @@ tasks.withType(JavaCompile).configureEach {
 
 tasks.named('test') {
     useJUnitPlatform()
-}
-
-tasks.named('processResources') {
-    dependsOn 'copyAngularBuild'
 }
