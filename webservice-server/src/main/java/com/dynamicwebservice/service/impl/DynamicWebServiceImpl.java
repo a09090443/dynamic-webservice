@@ -85,7 +85,7 @@ public class DynamicWebServiceImpl implements DynamicWebService {
     public List<EndpointDTO> getEndpoints() {
 
         ResourceEnum resource = ResourceEnum.SQL.getResource(EndPointJDBC.SQL_SELECT_ENDPOINT_RELATED_JAR_FILE);
-        List<WebServiceModel> webServiceModelList = endPointJDBC.queryForList(resource, new Conditions(), new HashMap<>(), WebServiceModel.class);
+        List<WebServiceModel> webServiceModelList = endPointJDBC.queryForList(resource, new Conditions(), WebServiceModel.class);
 
         return webServiceModelList.stream().map(endpoint -> {
             EndpointDTO dto = new EndpointDTO();
@@ -324,7 +324,7 @@ public class DynamicWebServiceImpl implements DynamicWebService {
         ResourceEnum resource = ResourceEnum.SQL.getResource(EndPointJDBC.SQL_SELECT_ENDPOINT_RELATED_JAR_FILE);
         Conditions conditions = new Conditions();
         conditions.equal("e.PUBLISH_URL", publishUrl);
-        List<WebServiceModel> webServiceModelList = endPointJDBC.queryForList(resource, new Conditions(), new HashMap<>(), WebServiceModel.class);
+        List<WebServiceModel> webServiceModelList = endPointJDBC.queryForList(resource, new Conditions(), WebServiceModel.class);
         webServiceModelList.forEach(endpoint -> {
             try {
                 JarFileEntity jarFileEntity = jarFileRepository.findById(endpoint.getJarFileId()).orElseThrow(() -> new FileNotFoundException("找不到對應的 Jar 檔案"));

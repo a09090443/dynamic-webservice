@@ -18,7 +18,7 @@ repositories {
 dependencies {
     implementation 'io.github.a09090443:base-spring-boot-starter:3.2.5.4'
     implementation 'io.github.a09090443:web-spring-boot-starter:3.2.5.1'
-    implementation 'io.github.a09090443:db-spring-boot-starter:3.2.5.1'
+    implementation 'io.github.a09090443:db-spring-boot-starter:3.2.5.2'
     implementation 'io.github.a09090443:web-service-spring-boot-starter:3.2.5.2'
 
     implementation 'org.springframework.boot:spring-boot-devtools:3.2.5'
@@ -37,15 +37,15 @@ dependencies {
 }
 
 tasks.register('buildAngular', Exec) {
-    workingDir file('../mockwebservice-frontend').absolutePath
+    workingDir file('../webservice-frontend').absolutePath
     environment 'PATH', file('../tools/node-v20.15.0-win-x64').absolutePath + File.pathSeparator + System.env.PATH
     def angularEnv = project.hasProperty('env') && project.property('env') == 'pro' ? 'production' : 'development'
-    commandLine 'npm.cmd', 'run', 'build', '--', '--configuration', angularEnv, '--base-href', '/mockwebservice/'
+    commandLine 'npm.cmd', 'run', 'build', '--', '--configuration', angularEnv, '--base-href', '/webservice-server/'
 }
 
 tasks.register('copyAngularBuild', Copy) {
     dependsOn 'buildAngular'
-    from '../mockwebservice-frontend/dist'
+    from '../webservice-frontend/dist'
     into 'src/main/resources/static'
 }
 

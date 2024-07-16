@@ -12,19 +12,19 @@ export class EndpointService {
   }
 
   fetchData(): Promise<any> {
-    return firstValueFrom(this.http.get(`${config.apiUrl}/mockwebservice/ws/getEndpoints`));
+    return firstValueFrom(this.http.get(`${config.apiUrl}/webservice-server/ws/getEndpoints`));
   }
 
   saveFormData(formData: any): Promise<any> {
-    return firstValueFrom(this.http.post<any>(`${config.apiUrl}/mockwebservice/ws/saveWebService`, formData));
+    return firstValueFrom(this.http.post<any>(`${config.apiUrl}/webservice-server/ws/saveWebService`, formData));
   }
 
   updateFormData(formData: any): Promise<any> {
-    return firstValueFrom(this.http.post<any>(`${config.apiUrl}/mockwebservice/ws/updateWebService`, formData));
+    return firstValueFrom(this.http.post<any>(`${config.apiUrl}/webservice-server/ws/updateWebService`, formData));
   }
 
   async deleteEndpoint(publishUrls: string[]): Promise<any> {
-    return await firstValueFrom(this.http.request('delete', `${config.apiUrl}/mockwebservice/ws/removeWebService`, {
+    return await firstValueFrom(this.http.request('delete', `${config.apiUrl}/webservice-server/ws/removeWebService`, {
       body: publishUrls
     }).pipe(
       catchError(this.handleError)
@@ -35,7 +35,7 @@ export class EndpointService {
     const params = new HttpParams()
       .set('publishUrl', publishUrl)
       .set('isActive', isActive.toString());
-    return await firstValueFrom(this.http.get(`${config.apiUrl}/mockwebservice/ws/switchWebService`, { params }));
+    return await firstValueFrom(this.http.get(`${config.apiUrl}/webservice-server/ws/switchWebService`, { params }));
   }
 
   async uploadFile(file: File): Promise<any> {
@@ -43,7 +43,7 @@ export class EndpointService {
     formData.append('file', file);
 
     try {
-      const response: any = await firstValueFrom(this.http.post(`${config.apiUrl}/mockwebservice/ws/uploadJarFile`, formData).pipe(
+      const response: any = await firstValueFrom(this.http.post(`${config.apiUrl}/webservice-server/ws/uploadJarFile`, formData).pipe(
         catchError(this.handleError)
       ));
       if (response.code === 200) {

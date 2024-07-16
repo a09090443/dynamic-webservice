@@ -14,19 +14,19 @@ export class ResponseService {
 
   fetchData(publishUrl: string): Promise<any> {
     const body = {publishUrl: publishUrl};
-    return firstValueFrom(this.http.post(`${config.apiUrl}/mockwebservice/ws/getResponseList`, body));
+    return firstValueFrom(this.http.post(`${config.apiUrl}/webservice-server/ws/getResponseList`, body));
   }
 
   saveFormData(formData: any): Promise<any> {
-    return firstValueFrom(this.http.post<any>(`${config.apiUrl}/mockwebservice/ws/saveMockResponse`, formData));
+    return firstValueFrom(this.http.post<any>(`${config.apiUrl}/webservice-server/ws/saveMockResponse`, formData));
   }
 
   updateFormData(formData: any): Promise<any> {
-    return firstValueFrom(this.http.post<any>(`${config.apiUrl}/mockwebservice/ws/updateResponse`, formData));
+    return firstValueFrom(this.http.post<any>(`${config.apiUrl}/webservice-server/ws/updateResponse`, formData));
   }
 
   async deleteResponse(ids: string[]): Promise<any> {
-    return await firstValueFrom(this.http.request('delete', `${config.apiUrl}/mockwebservice/ws/deleteResponse`, {
+    return await firstValueFrom(this.http.request('delete', `${config.apiUrl}/webservice-server/ws/deleteResponse`, {
       body: ids
     }).pipe(
       catchError(this.handleError)
@@ -37,7 +37,7 @@ export class ResponseService {
     const params = new HttpParams()
       .set('id', row.id)
       .set('isActive', isActive.toString());
-    return await firstValueFrom(this.http.get(`${config.apiUrl}/mockwebservice/ws/switchResponse`, { params }));
+    return await firstValueFrom(this.http.get(`${config.apiUrl}/webservice-server/ws/switchResponse`, { params }));
   }
 
   private handleError(error: HttpErrorResponse): Observable<string> {
