@@ -14,19 +14,35 @@ import java.util.List;
 
 public interface DynamicWebService {
     List<EndpointDTO> getEndpoints() throws SQLException;
+
     EndpointDTO getEndpoint(String id);
+
     String getResponseContent(MockResponseRequestDTO request);
+
     List<MockResponseResponseDTO> getResponseList(MockResponseRequestDTO request);
+
     void saveWebService(EndpointDTO endpointDTO) throws FileNotFoundException;
+
     void updateWebService(EndpointDTO endpointDTO) throws FileNotFoundException;
+
     void enabledWebService(String publishUrl) throws Exception;
+
     void disabledWebService(String publicUrl, Boolean isDeleted) throws Exception;
+
     void disabledJarFile(String publishUrl) throws Exception;
+
     void removeWebService(String publishUrl) throws Exception;
+
     void saveMockResponse(MockResponseRequestDTO request);
+
     void updateMockResponse(MockResponseRequestDTO request);
+
     void updateMockResponse(String oriPublishUrl, String newPublishUrl);
+
     void deleteMockResponse(String id);
+
     void switchMockResponse(String id, Boolean status);
-    JarFileResponseDTO uploadJarFile(InputStream inputStream) throws IOException;
+
+    JarFileResponseDTO uploadJarFile(InputStream inputStream);
+
 }

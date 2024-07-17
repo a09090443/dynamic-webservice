@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  h2:
+    image: oscarfonts/h2
+    container_name: h2-database
+    ports:
+      - "9092:9092"
+      - "8082:8082"
+    environment:
+      - H2_OPTIONS=-tcp -tcpAllowOthers -baseDir /opt/h2-data
+    volumes:
+      - D:/tmp/h2:/opt/h2-data
+
+  app:
+    image: webservice-server
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - h2
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:h2:tcp://h2-database:9092/./webservice;DB_CLOSE_ON_EXIT=FALSE;MODE=MYSQL
+      SPRING_DATASOURCE_USERNAME: sa
+      SPRING_DATASOURCE_PASSWORD: sa
+    ports:
+      - "8080:8080"

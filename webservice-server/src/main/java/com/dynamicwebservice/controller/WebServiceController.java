@@ -214,24 +214,18 @@ public class WebServiceController {
     }
 
     @PostMapping("/uploadJarFile")
-    public Result<JarFileResponseDTO> uploadJarFile(@RequestParam("file") MultipartFile file) {
-        try {
-            // 檢查檔案是否為空或不是以 .jar 結尾
-            if (file.isEmpty() || !Objects.requireNonNull(file.getOriginalFilename()).endsWith(".jar")) {
-                log.error("Upload jar file failed: file is empty or not a jar file");
-                return Result.failure(ResultStatus.BAD_REQUEST);
-            }
-
-            // 執行實際的檔案上傳操作，這裡假設使用 dynamicWebService 來處理上傳
-            JarFileResponseDTO jarFileResponse = dynamicWebService.uploadJarFile(file.getInputStream());
-
-            // 返回成功上傳的訊息和新檔案編號
-            return Result.success(jarFileResponse);
-        } catch (IOException e) {
-            // 如果發生 IO 錯誤，返回伺服器內部錯誤訊息
-            log.error("Upload jar file failed", e);
-            return Result.failure(ResultStatus.INTERNAL_SERVER_ERROR);
+    public Result<JarFileResponseDTO> uploadJarFile(@RequestParam("file") MultipartFile file) throws IOException {
+        // 檢查檔案是否為空或不是以 .jar 結尾
+        if (file.isEmpty() || !Objects.requireNonNull(file.getOriginalFilename()).endsWith(".jar")) {
+            log.error("Upload jar file failed: file is empty or not a jar file");
+            return Result.failure(ResultStatus.BAD_REQUEST);
         }
+
+        // 執行實際的檔案上傳操作，這裡假設使用 dynamicWebService 來處理上傳
+        JarFileResponseDTO jarFileResponse = dynamicWebService.uploadJarFile(file.getInputStream());
+
+        // 返回成功上傳的訊息和新檔案編號
+        return Result.success(jarFileResponse);
     }
 
 }

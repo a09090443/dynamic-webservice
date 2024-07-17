@@ -1,7 +1,6 @@
 package com.dynamicwebservice.service.impl;
 
 import com.dynamicwebservice.dto.EndpointDTO;
-import com.dynamicwebservice.dto.JarFileResponseDTO;
 import com.dynamicwebservice.dto.MockResponseRequestDTO;
 import com.dynamicwebservice.dto.MockResponseResponseDTO;
 import com.dynamicwebservice.entity.EndpointEntity;
@@ -33,11 +32,6 @@ import org.springframework.stereotype.Service;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,7 +40,7 @@ import java.util.UUID;
 
 @Slf4j
 @Service
-public class DynamicWebServiceImpl implements DynamicWebService {
+public class DynamicWebServiceImpl extends CommonService implements DynamicWebService {
 
     private final ApplicationContext context;
 
@@ -154,7 +148,7 @@ public class DynamicWebServiceImpl implements DynamicWebService {
         endpointEntity.setIsActive(Boolean.FALSE);
         endpointEntity.setJarFileId(endpointDTO.getJarFileId());
         endpointDTO.setId(endpointEntity.getUuId());
-        JarFileEntity jarFileEntity = jarFileRepository.findById(endpointDTO.getJarFileId()).orElseThrow(() -> new FileNotFoundException("找不到對應的 Jar 檔案"));
+        JarFileEntity jarFileEntity = getJarFile(endpointDTO.getJarFileId());
 
         jarFileEntity.setStatus(JarFileStatus.ACTIVE);
         try {
@@ -255,34 +249,9 @@ public class DynamicWebServiceImpl implements DynamicWebService {
     }
 
     @Override
-    public JarFileResponseDTO uploadJarFile(InputStream inputStream) throws IOException {
-
-        // 確保上傳目錄存在
-        Path uploadPath = Paths.get(jarFileDir);
-        if (!Files.exists(uploadPath)) {
-            Files.createDirectories(uploadPath);
-        }
-
-        String newFileName = UUID.randomUUID() + ".jar";
-        // 儲存檔案到本地檔案系統
-        Path filePath = uploadPath.resolve(newFileName);
-        Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
-
-        JarFileEntity jarFileEntity = new JarFileEntity();
-        jarFileEntity.setName(newFileName);
-        jarFileEntity.setStatus(JarFileStatus.INACTIVE);
-        jarFileEntity = jarFileRepository.save(jarFileEntity);
-
-        JarFileResponseDTO jarFileResponse = new JarFileResponseDTO();
-        jarFileResponse.setJarFileId(jarFileEntity.getId());
-        jarFileResponse.setJarFileName(jarFileEntity.getName());
-        return jarFileResponse;
-    }
-
-    @Override
     public void enabledWebService(String publishUrl) throws FileNotFoundException {
         EndpointEntity endpointEntity = endpointRepository.findById(publishUrl).orElseThrow(() -> new FileNotFoundException("找不到對應的 Web Service"));
-        JarFileEntity jarFileEntity = jarFileRepository.findById(endpointEntity.getJarFileId()).orElseThrow(() -> new FileNotFoundException("找不到對應的 Jar 檔案"));
+        JarFileEntity jarFileEntity = getJarFile(endpointEntity.getJarFileId());
         WebServiceHandler registerWebService = new WebServiceHandler();
         EndpointDTO endpointDTO = new EndpointDTO();
 
@@ -301,7 +270,7 @@ public class DynamicWebServiceImpl implements DynamicWebService {
     @Override
     public void disabledWebService(String publicUrl, Boolean isDeleted) throws FileNotFoundException {
         EndpointEntity endpointEntity = endpointRepository.findById(publicUrl).orElseThrow(() -> new FileNotFoundException("找不到對應的 Web Service"));
-        JarFileEntity jarFileEntity = jarFileRepository.findById(endpointEntity.getJarFileId()).orElseThrow(() -> new FileNotFoundException("找不到對應的 Jar 檔案"));
+        JarFileEntity jarFileEntity = getJarFile(endpointEntity.getJarFileId());
         WebServiceHandler registerWebService = new WebServiceHandler();
         try {
             registerWebService.removeWebService(publicUrl, bus, context, jarFileEntity.getName());
@@ -327,7 +296,7 @@ public class DynamicWebServiceImpl implements DynamicWebService {
         List<WebServiceModel> webServiceModelList = endPointJDBC.queryForList(resource, new Conditions(), WebServiceModel.class);
         webServiceModelList.forEach(endpoint -> {
             try {
-                JarFileEntity jarFileEntity = jarFileRepository.findById(endpoint.getJarFileId()).orElseThrow(() -> new FileNotFoundException("找不到對應的 Jar 檔案"));
+                JarFileEntity jarFileEntity = getJarFile(endpoint.getJarFileId());
                 jarFileEntity.setStatus(JarFileStatus.INACTIVE);
                 jarFileRepository.save(jarFileEntity);
             } catch (FileNotFoundException e) {
@@ -348,4 +317,7 @@ public class DynamicWebServiceImpl implements DynamicWebService {
         }
     }
 
+    private JarFileEntity getJarFile(String jarFileId) throws FileNotFoundException {
+        return jarFileRepository.findById(jarFileId).orElseThrow(() -> new FileNotFoundException("找不到對應的 Jar 檔案"));
+    }
 }
