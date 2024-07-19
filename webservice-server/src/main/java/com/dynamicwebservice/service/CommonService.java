@@ -10,11 +10,18 @@ import java.util.List;
 
 public interface CommonService {
     JarFileResponseDTO uploadJarFile(InputStream inputStream) throws IOException;
+
     String getResponseContent(MockResponseRequestDTO request);
+
     List<MockResponseResponseDTO> getResponseList(MockResponseRequestDTO request);
+
     void saveMockResponse(MockResponseRequestDTO request);
+
     void updateMockResponse(MockResponseRequestDTO request);
+
     void updateMockResponse(String oriPublishUri, String newPublishUri);
+
     void deleteMockResponse(String id);
+
     void switchMockResponse(String id, Boolean status);
 }

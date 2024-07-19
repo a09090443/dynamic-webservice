@@ -2,8 +2,6 @@ package com.dynamicwebservice.controller;
 
 import com.dynamicwebservice.dto.EndpointDTO;
 import com.dynamicwebservice.dto.EndpointResponseDTO;
-import com.dynamicwebservice.dto.MockResponseRequestDTO;
-import com.dynamicwebservice.dto.MockResponseResponseDTO;
 import com.dynamicwebservice.dto.WebServiceRequestDTO;
 import com.dynamicwebservice.exception.WebserviceException;
 import com.dynamicwebservice.service.CommonService;
@@ -24,7 +22,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
@@ -45,7 +42,7 @@ public class WebServiceController {
     }
 
     @GetMapping("/getEndpoints")
-    public Result<List<EndpointResponseDTO>> getEndpoints() throws SQLException {
+    public Result<List<EndpointResponseDTO>> getEndpoints() {
         List<EndpointDTO> endpoints = dynamicWebService.getEndpoints();
         List<EndpointResponseDTO> endpointResponseList = endpoints.stream().map(endpointDTO -> {
             EndpointResponseDTO response = new EndpointResponseDTO();
@@ -121,7 +118,7 @@ public class WebServiceController {
     }
 
     @DeleteMapping("/removeWebService")
-    public Result<String> removeWebService(@RequestBody String[] publishUris) throws Exception {
+    public Result<String> removeWebService(@RequestBody String[] publishUris) {
         for (String publishUri : publishUris) {
             dynamicWebService.removeWebService(publishUri);
         }
@@ -129,7 +126,7 @@ public class WebServiceController {
     }
 
     @GetMapping("/switchWebService")
-    public Result<String> switchWebService(@RequestParam String publishUri, @RequestParam Boolean isActive) throws Exception {
+    public Result<String> switchWebService(@RequestParam String publishUri, @RequestParam Boolean isActive) {
         if (StringUtils.isNotBlank(publishUri) && isActive != null) {
             if (isActive) {
                 dynamicWebService.enabledWebService(publishUri);
@@ -138,32 +135,6 @@ public class WebServiceController {
             }
         }
         return Result.success(StringUtils.EMPTY);
-    }
-
-    @PostMapping("/saveMockResponse")
-    public Result<MockResponseResponseDTO> saveMockResponse(@RequestBody MockResponseRequestDTO request) {
-        log.info("Save mock response: {}", request);
-
-        if (StringUtils.isBlank(request.getPublishUri())) {
-            log.error("PublishUri is blank");
-        }
-        if (StringUtils.isBlank(request.getMethod())) {
-            log.error("Method is blank");
-        }
-        if (StringUtils.isBlank(request.getCondition())) {
-            log.error("Condition is blank");
-        }
-        if (StringUtils.isBlank(request.getPublishUri()) ||
-                StringUtils.isBlank(request.getMethod()) ||
-                StringUtils.isBlank(request.getCondition())) {
-            return Result.failure(ResultStatus.BAD_REQUEST);
-        }
-
-        commonService.saveMockResponse(request);
-        MockResponseResponseDTO mockResponseResponse = new MockResponseResponseDTO();
-        BeanUtils.copyProperties(request, mockResponseResponse);
-
-        return Result.success(mockResponseResponse);
     }
 
 }

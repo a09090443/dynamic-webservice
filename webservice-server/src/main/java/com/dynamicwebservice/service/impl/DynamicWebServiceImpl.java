@@ -25,7 +25,6 @@ import org.springframework.stereotype.Service;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
@@ -93,7 +92,7 @@ public class DynamicWebServiceImpl implements DynamicWebService {
     }
 
     @Override
-    public void saveWebService(EndpointDTO endpointDTO) throws FileNotFoundException {
+    public void saveWebService(EndpointDTO endpointDTO) {
 
         EndpointEntity endpointEntity = new EndpointEntity();
         endpointEntity.setUuId(UUID.randomUUID().toString());
@@ -122,13 +121,13 @@ public class DynamicWebServiceImpl implements DynamicWebService {
     }
 
     @Override
-    public void updateWebService(EndpointDTO endpointDTO) throws FileNotFoundException {
+    public void updateWebService(EndpointDTO endpointDTO) {
         saveWebService(endpointDTO);
     }
 
     @Override
-    public void enabledWebService(String publishUrl) throws FileNotFoundException {
-        EndpointEntity endpointEntity = endpointRepository.findById(publishUrl).orElseThrow(() -> new FileNotFoundException("找不到對應的 Web Service"));
+    public void enabledWebService(String publishUrl) {
+        EndpointEntity endpointEntity = endpointRepository.findById(publishUrl).orElseThrow(() -> new WebserviceException("找不到對應的 Web Service"));
         JarFileEntity jarFileEntity = getJarFile(endpointEntity.getJarFileId());
         WebServiceHandler registerWebService = new WebServiceHandler();
         EndpointDTO endpointDTO = new EndpointDTO();
@@ -146,8 +145,8 @@ public class DynamicWebServiceImpl implements DynamicWebService {
     }
 
     @Override
-    public void disabledWebService(String publicUrl, Boolean isDeleted) throws FileNotFoundException {
-        EndpointEntity endpointEntity = endpointRepository.findById(publicUrl).orElseThrow(() -> new FileNotFoundException("找不到對應的 Web Service"));
+    public void disabledWebService(String publicUrl, Boolean isDeleted) {
+        EndpointEntity endpointEntity = endpointRepository.findById(publicUrl).orElseThrow(() -> new WebserviceException("找不到對應的 Web Service"));
         JarFileEntity jarFileEntity = getJarFile(endpointEntity.getJarFileId());
         WebServiceHandler registerWebService = new WebServiceHandler();
         try {
@@ -178,7 +177,7 @@ public class DynamicWebServiceImpl implements DynamicWebService {
                 JarFileEntity jarFileEntity = getJarFile(endpoint.getJarFileId());
                 jarFileEntity.setStatus(JarFileStatus.INACTIVE);
                 jarFileRepository.save(jarFileEntity);
-            } catch (FileNotFoundException e) {
+            } catch (Exception e) {
                 log.error(e.getMessage());
                 throw new WebserviceException("關閉 Jar 檔案失敗");
             }
@@ -186,11 +185,10 @@ public class DynamicWebServiceImpl implements DynamicWebService {
     }
 
     @Override
-    public void removeWebService(String publishUrl) throws Exception {
-
+    public void removeWebService(String publishUrl) {
         try {
             this.disabledWebService(publishUrl, true);
-        } catch (FileNotFoundException e) {
+        } catch (Exception e) {
             log.error("移除 Web Service 失敗:{}", e.getMessage(), e);
             throw new WebserviceException("移除 Web Service 失敗");
         }
@@ -201,8 +199,9 @@ public class DynamicWebServiceImpl implements DynamicWebService {
         path.append(resource.dir());
         path.append(resource.file());
         path.append(resource.extension());
+        File jarFile = null;
         try {
-            File jarFile = FileUtil.getFileFromClasspath(path.toString());
+            jarFile = FileUtil.getFileFromClasspath(path.toString());
             FileInputStream fis = new FileInputStream(jarFile);
             // 檢查資源是否存在
             if (!jarFile.exists()) {
@@ -214,11 +213,12 @@ public class DynamicWebServiceImpl implements DynamicWebService {
                 return reader.lines().collect(Collectors.joining("\n"));
             }
         } catch (Exception e) {
-            throw new WebserviceException("Error reading file from JAR: " + path.toString(), e);
+            assert jarFile != null;
+            throw new WebserviceException("Error reading file from JAR: " + jarFile.getAbsoluteFile().getAbsolutePath(), e);
         }
     }
 
-    private JarFileEntity getJarFile(String jarFileId) throws FileNotFoundException {
-        return jarFileRepository.findById(jarFileId).orElseThrow(() -> new FileNotFoundException("找不到對應的 Jar 檔案"));
+    private JarFileEntity getJarFile(String jarFileId) {
+        return jarFileRepository.findById(jarFileId).orElseThrow(() -> new WebserviceException("找不到對應的 Jar 檔案"));
     }
 }
