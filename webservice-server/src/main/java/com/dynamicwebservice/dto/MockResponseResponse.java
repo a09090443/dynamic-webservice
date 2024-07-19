@@ -1,13 +1,8 @@
 package com.dynamicwebservice.dto;
 
-import lombok.Data;
+public class MockResponseResponse {
 
-@Data
-public class MockResponseRequestDTO {
-
-    private String id;
-
-    private String publishUri;
+    private String publicUrl;
 
     private String method;
 

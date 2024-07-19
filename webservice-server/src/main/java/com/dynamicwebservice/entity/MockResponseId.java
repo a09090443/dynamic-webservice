@@ -13,8 +13,8 @@ import java.io.Serializable;
 @AllArgsConstructor
 @Embeddable
 public class MockResponseId implements Serializable {
-    @Column(name = "PUBLISH_URL", nullable = false)
-    private String publishUrl;
+    @Column(name = "PUBLISH_URI", nullable = false)
+    private String publishUri;
 
     @Column(name = "METHOD", nullable = false)
     private String method;

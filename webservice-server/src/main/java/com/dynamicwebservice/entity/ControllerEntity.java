@@ -18,7 +18,7 @@ public class ControllerEntity extends BaseEntity {
 
     @Column(name = "PUBLISH_URI", nullable = false)
     @Id
-    private String publishUrl;
+    private String publishUri;
 
     @Column(name = "JAR_FILE_ID", nullable = false)
     private String jarFileId;

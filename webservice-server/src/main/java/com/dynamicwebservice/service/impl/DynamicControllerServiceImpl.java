@@ -23,7 +23,7 @@ import java.util.Optional;
 
 @Slf4j
 @Service
-public class DynamicControllerServiceImpl extends CommonService implements DynamicControllerService {
+public class DynamicControllerServiceImpl implements DynamicControllerService {
 
     private final ApplicationContext context;
     private final RequestMappingHandlerMapping requestMappingHandlerMapping;

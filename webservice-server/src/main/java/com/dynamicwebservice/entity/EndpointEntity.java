@@ -16,9 +16,9 @@ public class EndpointEntity extends BaseEntity {
     @Column(name = "ID", nullable = false)
     private String uuId;
 
-    @Column(name = "PUBLISH_URL", nullable = false)
+    @Column(name = "PUBLISH_URI", nullable = false)
     @Id
-    private String publishUrl;
+    private String publishUri;
 
     @Column(name = "BEAN_NAME", nullable = false)
     private String beanName;

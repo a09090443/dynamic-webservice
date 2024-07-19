@@ -1,5 +1,5 @@
 SELECT e.ID          AS id,
-       e.PUBLISH_URL AS publishUrl,
+       e.PUBLISH_URI AS publishUri,
        e.BEAN_NAME   AS beanName,
        e.CLASS_PATH  AS classPath,
        e.IS_ACTIVE   AS isActive,

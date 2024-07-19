@@ -28,7 +28,7 @@ const COLUMNS_SCHEMA = [
     label: '編號',
   },
   {
-    key: 'publishUrl',
+    key: 'publishUri',
     type: 'text',
     label: '發布名稱',
   },
@@ -156,7 +156,7 @@ export class EndpointComponent implements OnInit, AfterViewInit {
     const deleteItem = confirm("確定刪除?");
     if (deleteItem) {
       const selectedRows = this.dataSource.data.filter(item => this.selection.isSelected(item));
-      const selectedUrls = selectedRows.map(item => item.publishUrl);
+      const selectedUrls = selectedRows.map(item => item.publishUri);
       // 移除前端表格中的選中行
       this.dataSource.data = this.dataSource.data.filter(item => !this.selection.isSelected(item));
 
@@ -189,7 +189,7 @@ export class EndpointComponent implements OnInit, AfterViewInit {
       this.dataSource.data = [...data]; // 使用新的數組引用來觸發 Angular 變更檢測
 
       // 發送 DELETE 請求到後端
-      this.endpointService.deleteEndpoint([rowData.publishUrl])
+      this.endpointService.deleteEndpoint([rowData.publishUri])
         .then(
           response => {
             console.log('刪除成功', response);
@@ -222,7 +222,7 @@ export class EndpointComponent implements OnInit, AfterViewInit {
 
   responseList(row: Endpoint) {
     console.log(row);
-    this.router.navigate(['/response', {publishUrl: row.publishUrl}]).then(r => console.log(r));
+    this.router.navigate(['/response', {publishUri: row.publishUri}]).then(r => console.log(r));
   }
 
   addRow(newEndpoint: Endpoint) {
@@ -233,7 +233,7 @@ export class EndpointComponent implements OnInit, AfterViewInit {
     const confirmation = confirm('你確定要變更此設定嗎？');
     if (confirmation) {
       console.log('User confirmed');
-      this.endpointService.switchWebservice(row.publishUrl, event.checked).then(
+      this.endpointService.switchWebservice(row.publishUri, event.checked).then(
         (response: any) => {
           console.log('Switched web service:', response.data);
           row.isActive = event.checked;

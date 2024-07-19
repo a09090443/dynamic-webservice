@@ -6,7 +6,7 @@ import lombok.Data;
 public class EndpointDTO {
     private String id;
 
-    private String publishUrl;
+    private String publishUri;
 
     private String beanName;
 

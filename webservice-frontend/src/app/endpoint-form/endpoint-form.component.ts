@@ -58,7 +58,7 @@ export class EndpointFormComponent {
   private initializeForm(data: Endpoint): void {
     const defaultData: Endpoint = {
       id: '',
-      publishUrl: '',
+      publishUri: '',
       beanName: '',
       classPath: '',
       jarFileId: '',
@@ -70,7 +70,7 @@ export class EndpointFormComponent {
 
     this.form = this.fb.group({
       id: [data?.id || defaultData.id],
-      publishUrl: [data?.publishUrl || defaultData.publishUrl, Validators.required],
+      publishUri: [data?.publishUri || defaultData.publishUri, Validators.required],
       beanName: [data?.beanName || defaultData.beanName, Validators.required],
       classPath: [data?.classPath || defaultData.classPath, Validators.required],
       jarFileId: [data?.jarFileId || defaultData.jarFileId],

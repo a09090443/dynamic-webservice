@@ -11,7 +11,6 @@ import org.apache.cxf.jaxws.EndpointImpl;
 import org.springframework.context.ApplicationContext;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 
 @Slf4j
@@ -25,8 +24,8 @@ public class WebServiceHandler {
             this.setBeanName(context, endpointDTO.getBeanName(), loadedClass);
             EndpointImpl endpoint;
             endpoint = new EndpointImpl(context.getBean(Bus.class), dynamicBeanUtil.getBean(endpointDTO.getBeanName(), loadedClass));
-            endpoint.publish(StringConstant.SLASH + endpointDTO.getPublishUrl());
-            log.info("Web Service 註冊服務:{}, 對應 URI:{}", endpointDTO.getBeanName(), endpointDTO.getPublishUrl());
+            endpoint.publish(StringConstant.SLASH + endpointDTO.getPublishUri());
+            log.info("Web Service 註冊服務:{}, 對應 URI:{}", endpointDTO.getBeanName(), endpointDTO.getPublishUri());
         } catch (Exception e) {
             log.error("Web Service 註冊服務:{}, 失敗", endpointDTO.getBeanName(), e);
             throw new WebserviceException("Web Service 註冊服務失敗");

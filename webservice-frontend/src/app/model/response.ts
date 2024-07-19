@@ -1,6 +1,6 @@
 export interface Response {
   id: string,
-  publishUrl: string,
+  publishUri: string,
   method: string,
   condition: string,
   responseContent: string,

@@ -8,7 +8,7 @@ public class WebServiceRequestDTO {
 
     private String beanName;
 
-    private String publishUrl;
+    private String publishUri;
 
     private String classPath;
 

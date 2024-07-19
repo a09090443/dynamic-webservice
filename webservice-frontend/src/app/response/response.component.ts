@@ -26,36 +26,43 @@ const COLUMNS_SCHEMA = [
     key: 'checkbox',
     type: '',
     label: '',
+    width: '3%', // 50px
   },
   {
-    key: 'publishUrl',
+    key: 'publishUri',
     type: 'text',
     label: '發布名稱',
+    width: '10%', // 150px
   },
   {
     key: 'method',
     type: 'text',
     label: '呼叫方法名稱',
+    width: '10%', // 150px
   },
   {
     key: 'condition',
     type: 'text',
     label: 'Response條件',
+    width: '25%', // 200px
   },
   {
     key: 'responseContent',
     type: 'text',
     label: '回應內容',
+    width: '25%', // 300px
   },
   {
     key: 'isActive',
     type: 'boolean',
     label: '狀態',
+    width: '7%', // 100px
   },
   {
     key: 'isEdit',
     type: 'isEdit',
     label: '',
+    width: '20%', // 100px
   },
 ];
 
@@ -94,7 +101,7 @@ export class ResponseComponent implements OnInit, AfterViewInit {
   pageSizeOptions = [10, 50, 100];
   displayedColumns: string[] = COLUMNS_SCHEMA.map((col) => col.key);
   columnsSchema: any = COLUMNS_SCHEMA;
-  publishUrl: string = '';
+  publishUri: string = '';
 
   dataSource: MatTableDataSource<Response> = new MatTableDataSource<Response>();
   @ViewChild(MatSort) dataSort: MatSort = new MatSort();
@@ -109,14 +116,14 @@ export class ResponseComponent implements OnInit, AfterViewInit {
 
   ngOnInit(): void {
     this.route.params.subscribe(params => {
-      const publishUrl = params['publishUrl'];
-      this.fetchDataFromService(publishUrl);
+      const publishUri = params['publishUri'];
+      this.fetchDataFromService(publishUri);
     });
   }
 
-  fetchDataFromService(publishUrl: string): void {
-    this.publishUrl = publishUrl;
-    this.responseService.fetchData(publishUrl).then(
+  fetchDataFromService(publishUri: string): void {
+    this.publishUri = publishUri;
+    this.responseService.fetchData(publishUri).then(
       (response: any) => {
         console.log('Fetched data:', response.data);
         this.dataSource = new MatTableDataSource<Response>(response.data);
@@ -210,16 +217,16 @@ export class ResponseComponent implements OnInit, AfterViewInit {
   }
 
   openResponseForm(input?: Response | string) {
-    let dialogData: { publishUrl?: string } = {};
+    let dialogData: { publishUri?: string } = {};
 
     if (typeof input === 'string') {
-      dialogData.publishUrl = input;
+      dialogData.publishUri = input;
     } else if (input && typeof input === 'object') {
       dialogData = input;
     }
 
     const dialogRef = this.dialog.open(ResponseFormComponent, {
-      width: '600px',
+      width: '1000px',
       disableClose: true,
       data: dialogData,
     });

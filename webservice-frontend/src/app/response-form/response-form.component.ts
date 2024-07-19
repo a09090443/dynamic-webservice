@@ -39,7 +39,7 @@ import {MatCheckbox} from "@angular/material/checkbox";
 export class ResponseFormComponent {
   form!: FormGroup;
   isEditMode: boolean;
-  publishUrl: string | null = null;
+  publishUri: string | null = null;
   message: string | null = null;
   messageType: 'success' | 'error' | null = null;
   countdown: number | null = null;
@@ -58,10 +58,10 @@ export class ResponseFormComponent {
   }
 
   private initializeForm(data: Response): void {
-    this.publishUrl = data.publishUrl;
+    this.publishUri = data.publishUri;
     const defaultData: Response = {
       id: '',
-      publishUrl: '',
+      publishUri: '',
       method: '',
       condition: '',
       responseContent: '',
@@ -70,7 +70,7 @@ export class ResponseFormComponent {
 
     this.form = this.fb.group({
       id: [data?.id || defaultData.id],
-      publishUrl: [data?.publishUrl || defaultData.publishUrl, Validators.required],
+      publishUri: [data?.publishUri || defaultData.publishUri, Validators.required],
       method: [data?.method || defaultData.method, Validators.required],
       condition: [data?.condition || defaultData.condition, Validators.required],
       responseContent: [data?.responseContent || defaultData.responseContent],

@@ -1,6 +1,6 @@
 export interface Endpoint {
   id: string,
-  publishUrl: string,
+  publishUri: string,
   beanName: string,
   classPath: string,
   jarFileId: string,

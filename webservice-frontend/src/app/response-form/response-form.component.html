@@ -5,9 +5,9 @@
     關閉視窗倒數 {{ countdown }} 秒...
   </div>
   <form [formGroup]="form" style="display: flex; flex-direction: column;">
-    <mat-form-field class="example-form-field" style="flex: 1;" *ngIf="publishUrl">
-      <mat-label>Publish URL</mat-label>
-      <input matInput type="text" [value]="publishUrl" disabled>
+    <mat-form-field class="example-form-field" style="flex: 1;" *ngIf="publishUri">
+      <mat-label>Publish URI</mat-label>
+      <input matInput type="text" [value]="publishUri" disabled>
     </mat-form-field>
 
     <mat-form-field class="example-form-field" style="flex: 1;">

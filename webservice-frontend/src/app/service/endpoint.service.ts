@@ -31,9 +31,9 @@ export class EndpointService {
     ));
   }
 
-  async switchWebservice(publishUrl: string, isActive: boolean): Promise<any> {
+  async switchWebservice(publishUri: string, isActive: boolean): Promise<any> {
     const params = new HttpParams()
-      .set('publishUrl', publishUrl)
+      .set('publishUri', publishUri)
       .set('isActive', isActive.toString());
     return await firstValueFrom(this.http.get(`${config.apiUrl}/webservice-server/ws/switchWebService`, { params }));
   }
@@ -43,7 +43,7 @@ export class EndpointService {
     formData.append('file', file);
 
     try {
-      const response: any = await firstValueFrom(this.http.post(`${config.apiUrl}/webservice-server/ws/uploadJarFile`, formData).pipe(
+      const response: any = await firstValueFrom(this.http.post(`${config.apiUrl}/webservice-server/common/uploadJarFile`, formData).pipe(
         catchError(this.handleError)
       ));
       if (response.code === 200) {

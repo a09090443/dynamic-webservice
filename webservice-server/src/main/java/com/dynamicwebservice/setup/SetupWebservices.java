@@ -21,21 +21,21 @@ import java.util.concurrent.atomic.AtomicReference;
 @Component
 public class SetupWebservices implements SmartLifecycle {
 
-    private final EndpointRepository endpintRepository;
+    private final EndpointRepository endpointRepository;
 
     private final ApplicationContext context;
 
     private final JarFileRepository jarFileRepository;
 
-    public SetupWebservices(EndpointRepository endpintRepository, ApplicationContext context, JarFileRepository jarFileRepository) {
-        this.endpintRepository = endpintRepository;
+    public SetupWebservices(EndpointRepository endpointRepository, ApplicationContext context, JarFileRepository jarFileRepository) {
+        this.endpointRepository = endpointRepository;
         this.context = context;
         this.jarFileRepository = jarFileRepository;
     }
 
     @Override
     public void start() {
-        List<EndpointEntity> endpointEntities = endpintRepository.findAllByIsActive(true);
+        List<EndpointEntity> endpointEntities = endpointRepository.findAllByIsActive(true);
         WebServiceHandler registerWebService = new WebServiceHandler();
         AtomicReference<JarFileEntity> jarFileEntity = new AtomicReference<>();
         EndpointDTO endpointDTO = new EndpointDTO();

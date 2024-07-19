@@ -12,21 +12,21 @@ export class ResponseService {
   constructor(private http: HttpClient) {
   }
 
-  fetchData(publishUrl: string): Promise<any> {
-    const body = {publishUrl: publishUrl};
-    return firstValueFrom(this.http.post(`${config.apiUrl}/webservice-server/ws/getResponseList`, body));
+  fetchData(publishUri: string): Promise<any> {
+    const body = {publishUri: publishUri};
+    return firstValueFrom(this.http.post(`${config.apiUrl}/webservice-server/common/getResponseList`, body));
   }
 
   saveFormData(formData: any): Promise<any> {
-    return firstValueFrom(this.http.post<any>(`${config.apiUrl}/webservice-server/ws/saveMockResponse`, formData));
+    return firstValueFrom(this.http.post<any>(`${config.apiUrl}/webservice-server/common/saveMockResponse`, formData));
   }
 
   updateFormData(formData: any): Promise<any> {
-    return firstValueFrom(this.http.post<any>(`${config.apiUrl}/webservice-server/ws/updateResponse`, formData));
+    return firstValueFrom(this.http.post<any>(`${config.apiUrl}/webservice-server/common/updateResponse`, formData));
   }
 
   async deleteResponse(ids: string[]): Promise<any> {
-    return await firstValueFrom(this.http.request('delete', `${config.apiUrl}/webservice-server/ws/deleteResponse`, {
+    return await firstValueFrom(this.http.request('delete', `${config.apiUrl}/webservice-server/common/deleteResponse`, {
       body: ids
     }).pipe(
       catchError(this.handleError)
@@ -37,7 +37,7 @@ export class ResponseService {
     const params = new HttpParams()
       .set('id', row.id)
       .set('isActive', isActive.toString());
-    return await firstValueFrom(this.http.get(`${config.apiUrl}/webservice-server/ws/switchResponse`, { params }));
+    return await firstValueFrom(this.http.get(`${config.apiUrl}/webservice-server/common/switchResponse`, { params }));
   }
 
   private handleError(error: HttpErrorResponse): Observable<string> {

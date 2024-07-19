@@ -5,7 +5,7 @@ import lombok.Data;
 @Data
 public class EndpointResponseDTO {
     public String id;
-    public String publishUrl;
+    public String publishUri;
     public String beanName;
     public String classPath;
     public Boolean isActive;

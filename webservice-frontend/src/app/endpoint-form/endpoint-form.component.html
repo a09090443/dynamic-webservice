@@ -6,9 +6,9 @@
   </div>
   <form [formGroup]="form" style="display: flex; flex-direction: column;">
     <mat-form-field class="example-form-field" style="flex: 1;">
-      <mat-label>Publish URL</mat-label>
-      <input matInput type="text" formControlName="publishUrl">
-      <button *ngIf="form.get('publishUrl')?.value" mat-icon-button matSuffix aria-label="Clear" (click)="clearField('publishUrl')">
+      <mat-label>Publish URI</mat-label>
+      <input matInput type="text" formControlName="publishUri">
+      <button *ngIf="form.get('publishUri')?.value" mat-icon-button matSuffix aria-label="Clear" (click)="clearField('publishUri')">
         <mat-icon>close</mat-icon>
       </button>
     </mat-form-field>
