@@ -1,8 +1,5 @@
-import {Component, EventEmitter, Inject, Output} from '@angular/core';
-import {Endpoint} from "../model/endpoint";
-import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
-import {FormBuilder} from "@angular/forms";
-import {EndpointService} from "../service/endpoint.service";
+import {Component, Inject} from '@angular/core';
+import {MAT_DIALOG_DATA} from "@angular/material/dialog";
 
 @Component({
   selector: 'app-error-dialog',

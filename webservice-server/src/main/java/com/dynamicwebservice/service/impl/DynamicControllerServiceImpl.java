@@ -1,8 +1,14 @@
 package com.dynamicwebservice.service.impl;
 
 import com.dynamicwebservice.dto.ControllerDTO;
+import com.dynamicwebservice.dto.EndpointDTO;
 import com.dynamicwebservice.exception.ControllerException;
+import com.dynamicwebservice.jdbc.ControllerJDBC;
+import com.dynamicwebservice.model.WebServiceModel;
+import com.dynamicwebservice.repository.ControllerRepository;
 import com.dynamicwebservice.service.DynamicControllerService;
+import com.zipe.enums.ResourceEnum;
+import com.zipe.jdbc.criteria.Conditions;
 import com.zipe.util.classloader.CustomClassLoader;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
@@ -19,6 +25,8 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -26,12 +34,17 @@ import java.util.Optional;
 public class DynamicControllerServiceImpl implements DynamicControllerService {
 
     private final ApplicationContext context;
+
     private final RequestMappingHandlerMapping requestMappingHandlerMapping;
 
+    private final ControllerRepository controllerRepository;
+
     public DynamicControllerServiceImpl(ApplicationContext context,
-                                        RequestMappingHandlerMapping requestMappingHandlerMapping) {
+                                        RequestMappingHandlerMapping requestMappingHandlerMapping,
+                                        ControllerRepository controllerRepository) {
         this.context = context;
         this.requestMappingHandlerMapping = requestMappingHandlerMapping;
+        this.controllerRepository = controllerRepository;
     }
 
     @Override
@@ -58,6 +71,27 @@ public class DynamicControllerServiceImpl implements DynamicControllerService {
             log.error("Controller 註冊服務:{}, 失敗", controllerDTO.getPublishUri(), e);
             throw new ControllerException("Controller 註冊服務失敗");
         }
+    }
+
+    @Override
+    public List<ControllerDTO> getControllers() {
+
+//        ResourceEnum resource = ResourceEnum.SQL.getResource(ControllerJDBC.SQL_SELECT_CONTROLLER_RELATED_JAR_FILE);
+//        String sql = readFileFromJar(resource);
+//        List<WebServiceModel> webServiceModelList = endPointJDBC.queryForList(sql, new Conditions(), new HashMap<>(), WebServiceModel.class);
+//
+//        return webServiceModelList.stream().map(endpoint -> {
+//            EndpointDTO dto = new EndpointDTO();
+//            dto.setId(endpoint.getId());
+//            dto.setPublishUri(endpoint.getPublishUri());
+//            dto.setClassPath(endpoint.getClassPath());
+//            dto.setBeanName(endpoint.getBeanName());
+//            dto.setIsActive(endpoint.getIsActive());
+//            dto.setJarFileId(endpoint.getJarFileId());
+//            dto.setJarFileName(endpoint.getJarFileName());
+//            return dto;
+//        }).toList();
+        return null;
     }
 
     private RequestMappingInfo getMappingForMethod(Method method, String classLevelPath) {

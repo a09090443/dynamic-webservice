@@ -54,7 +54,7 @@ public class SetupWebservices implements SmartLifecycle {
 
     @Override
     public void stop() {
-
+        return;
     }
 
     @Override

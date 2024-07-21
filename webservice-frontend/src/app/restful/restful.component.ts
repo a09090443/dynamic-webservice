@@ -1,73 +1,61 @@
 import {AfterViewInit, Component, OnInit, ViewChild} from '@angular/core';
-import {DatePipe, NgForOf, NgIf, NgSwitch, NgSwitchCase, NgSwitchDefault, SlicePipe} from "@angular/common";
-import {HeaderComponent} from "../header/header.component";
-import {MatButtonModule} from "@angular/material/button";
 import {MatTableDataSource, MatTableModule} from "@angular/material/table";
-import {MatCheckbox} from "@angular/material/checkbox";
-import {MatInputModule} from "@angular/material/input";
-import {MatPaginator, MatPaginatorModule} from "@angular/material/paginator";
-import {MatSlideToggle} from "@angular/material/slide-toggle";
-import {MatSort, MatSortModule} from "@angular/material/sort";
-import {SelectionModel} from "@angular/cdk/collections";
-import {MatDialog, MatDialogModule} from "@angular/material/dialog";
-import {ActivatedRoute} from "@angular/router";
-import {Response} from "../model/models";
-import {ResponseService} from "../service/response.service";
-import {ResponseFormComponent} from "../response-form/response-form.component";
-import {FormsModule} from "@angular/forms";
 import {MatCardModule} from "@angular/material/card";
+import {MatSort, MatSortModule} from "@angular/material/sort";
+import {MatButtonModule} from "@angular/material/button";
+import {MatPaginator, MatPaginatorModule} from "@angular/material/paginator";
+import {MatInputModule} from "@angular/material/input";
+import {MatCheckbox} from "@angular/material/checkbox";
+import {FormsModule} from "@angular/forms";
 import {MatDatepickerModule} from "@angular/material/datepicker";
 import {MatNativeDateModule} from "@angular/material/core";
+import {MatDialog, MatDialogModule} from "@angular/material/dialog";
+import {DatePipe, NgForOf, NgIf, NgSwitch, NgSwitchCase, NgSwitchDefault} from "@angular/common";
+import {HeaderComponent} from "../header/header.component";
 import {HttpClientModule} from "@angular/common/http";
-import {ContentComponent} from "../content/content.component";
+import {MatSlideToggle} from "@angular/material/slide-toggle";
+import {Endpoint, Restful} from "../model/models";
+import {SelectionModel} from "@angular/cdk/collections";
+import {Router} from "@angular/router";
+import {RestfulService} from "../service/restful.service";
+import {EndpointFormComponent} from "../endpoint-form/endpoint-form.component";
+import {ErrorDialogComponent} from "../error-dialog/error-dialog.component";
 
 const COLUMNS_SCHEMA = [
   {
-    key: 'checkbox',
-    type: '',
-    label: '',
-    width: '3%', // 50px
+    key: 'id',
+    type: 'text',
+    label: '編號',
   },
   {
     key: 'publishUri',
     type: 'text',
     label: '發布名稱',
-    width: '10%', // 150px
   },
   {
-    key: 'method',
+    key: 'classPath',
     type: 'text',
-    label: '呼叫方法名稱',
-    width: '10%', // 150px
+    label: 'Class路徑',
   },
   {
-    key: 'condition',
-    type: 'text',
-    label: 'Response條件',
-    width: '25%', // 200px
-  },
-  {
-    key: 'responseContent',
-    type: 'text',
-    label: '回應內容',
-    width: '25%', // 300px
+    key: 'jarFileId',
+    type: 'file',
+    label: 'Jar檔案編號',
   },
   {
     key: 'isActive',
     type: 'boolean',
     label: '狀態',
-    width: '7%', // 100px
   },
   {
     key: 'isEdit',
     type: 'isEdit',
     label: '',
-    width: '20%', // 100px
   },
 ];
 
 @Component({
-  selector: 'app-response',
+  selector: 'app-restful',
   standalone: true,
   imports: [
     MatTableModule,
@@ -89,48 +77,42 @@ const COLUMNS_SCHEMA = [
     NgForOf,
     HeaderComponent,
     HttpClientModule,
-    MatSlideToggle,
-    SlicePipe
+    MatSlideToggle
   ],
-  templateUrl: './response.component.html',
-  styleUrl: './response.component.css'
+  templateUrl: './restful.component.html',
+  styleUrl: './restful.component.css'
 })
-export class ResponseComponent implements OnInit, AfterViewInit {
+export class RestfulComponent  implements OnInit, AfterViewInit {
 
   pageSize = 10;
   pageSizeOptions = [10, 50, 100];
   displayedColumns: string[] = COLUMNS_SCHEMA.map((col) => col.key);
   columnsSchema: any = COLUMNS_SCHEMA;
-  publishUri: string = '';
 
-  dataSource: MatTableDataSource<Response> = new MatTableDataSource<Response>();
+  dataSource: MatTableDataSource<Restful> = new MatTableDataSource<Restful>();
   @ViewChild(MatSort) dataSort: MatSort = new MatSort();
   @ViewChild(MatPaginator) paginator: MatPaginator = <MatPaginator>{};
 
-  selection = new SelectionModel<Response>(true, []);
+  selection = new SelectionModel<Restful>(true, []);
 
   constructor(public dialog: MatDialog,
-              private responseService: ResponseService,
-              private route: ActivatedRoute) {
+              private restfulService: RestfulService,
+              private router: Router) {
   }
 
   ngOnInit(): void {
-    this.route.params.subscribe(params => {
-      const publishUri = params['publishUri'];
-      this.fetchDataFromService(publishUri);
-    });
+    this.fetchDataFromService();
   }
-
-  fetchDataFromService(publishUri: string): void {
-    this.publishUri = publishUri;
-    this.responseService.fetchData(publishUri).then(
+  fetchDataFromService(): void {
+    this.restfulService.fetchData().then(
       (response: any) => {
         console.log('Fetched data:', response.data);
-        this.dataSource = new MatTableDataSource<Response>(response.data);
+        this.dataSource = new MatTableDataSource<Restful>(response.data);
         this.dataSource.paginator = this.paginator;
         this.dataSource.sort = this.dataSort;
       },
       (error) => {
+        console.error('Error fetching data:', error);
         // Handle error
       }
     );
@@ -152,6 +134,7 @@ export class ResponseComponent implements OnInit, AfterViewInit {
     return numSelected === numRows;
   }
 
+
   masterToggle() {
     this.isAllSelected() ?
       this.selection.clear() :
@@ -164,16 +147,17 @@ export class ResponseComponent implements OnInit, AfterViewInit {
       : `${this.selection.isSelected(row) ? 'deselect' : 'select'} row ${row.position + 1}`;
   }
 
+
   removeSelectedRows() {
     const deleteItem = confirm("確定刪除?");
     if (deleteItem) {
       const selectedRows = this.dataSource.data.filter(item => this.selection.isSelected(item));
-      const selectedIdss = selectedRows.map(item => item.id);
+      const selectedUrls = selectedRows.map(item => item.publishUri);
       // 移除前端表格中的選中行
       this.dataSource.data = this.dataSource.data.filter(item => !this.selection.isSelected(item));
 
       // 發送 DELETE 請求到後端
-      this.responseService.deleteResponse(selectedIdss)
+      this.restfulService.deleteRestful(selectedUrls)
         .then(
           response => {
             console.log('刪除成功', response);
@@ -185,7 +169,8 @@ export class ResponseComponent implements OnInit, AfterViewInit {
         );
 
       // 清空選擇
-      this.selection.clear();    }
+      this.selection.clear();
+    }
     console.log(this.dataSource.data);
   }
 
@@ -200,7 +185,7 @@ export class ResponseComponent implements OnInit, AfterViewInit {
       this.dataSource.data = [...data]; // 使用新的數組引用來觸發 Angular 變更檢測
 
       // 發送 DELETE 請求到後端
-      this.responseService.deleteResponse([rowData.id])
+      this.restfulService.deleteRestful([rowData.publishUri])
         .then(
           response => {
             console.log('刪除成功', response);
@@ -216,55 +201,49 @@ export class ResponseComponent implements OnInit, AfterViewInit {
     console.log(id);
   }
 
-  openResponseForm(input?: Response | string) {
-    let dialogData: { publishUri?: string } = {};
-
-    if (typeof input === 'string') {
-      dialogData.publishUri = input;
-    } else if (input && typeof input === 'object') {
-      dialogData = input;
-    }
-
-    const dialogRef = this.dialog.open(ResponseFormComponent, {
-      width: '1000px',
+  openEndpointForm(row?: Endpoint) {
+    const dialogRef = this.dialog.open(EndpointFormComponent, {
+      width: '600px',
       disableClose: true,
-      data: dialogData,
+      data: row,
     });
-    dialogRef.componentInstance.responseSaved.subscribe((newResponse: Response) => {
-      if (typeof input === 'string') {
-        this.addRow(newResponse);
+    dialogRef.componentInstance.endpointSaved.subscribe((newEndpoint: Endpoint) => {
+      if (!row) {
+        this.addRow(newEndpoint);
       } else {
-        Object.assign(dialogData, newResponse);
+        Object.assign(row, newEndpoint);
       }
     });
   }
 
-  addRow(newResponse: Response) {
-    this.dataSource.data = [newResponse, ...this.dataSource.data];
+  responseList(row: Restful) {
+    console.log(row);
+    this.router.navigate(['/response', {publishUri: row.publishUri}]).then(r => console.log(r));
   }
 
-  onSwitchChange(event: any, row: Response): void {
+  addRow(newRestful: Restful) {
+    this.dataSource.data = [newRestful, ...this.dataSource.data];
+  }
+
+  onSwitchChange(event: any, row: Restful): void {
     const confirmation = confirm('你確定要變更此設定嗎？');
     if (confirmation) {
-      this.responseService.switchResponse(row, event.checked).then(
+      console.log('User confirmed');
+      this.restfulService.switchRestful(row.publishUri, event.checked).then(
         (response: any) => {
           console.log('Switched web service:', response.data);
-          // Handle success
+          row.isActive = event.checked;
         },
         (error) => {
-          console.error('Error switching web service:', error);
-          // Handle error
+          this.dialog.open(ErrorDialogComponent, {
+            width: '600px',
+            data: error.error,
+          });
         }
       );
     } else {
       // 使用者點擊取消，回退切換狀態
       event.source.checked = !event.checked;
     }
-  }
-
-  openFullContentDialog(content: string) {
-    this.dialog.open(ContentComponent, {
-      data: { content },
-    });
   }
 }

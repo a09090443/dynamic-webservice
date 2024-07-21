@@ -16,7 +16,7 @@ import lombok.Setter;
 @Setter
 @Entity
 @Table(name = "JAR_FILE")
-public class JarFileEntity extends BaseEntity{
+public class JarFileEntity extends BaseEntity {
 
     @Column(name = "ID", nullable = false)
     @Id

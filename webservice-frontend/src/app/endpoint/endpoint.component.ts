@@ -14,7 +14,7 @@ import {MatSort, MatSortModule} from "@angular/material/sort";
 import {MatButtonModule} from "@angular/material/button";
 import {MatPaginator, MatPaginatorModule} from "@angular/material/paginator";
 import {HttpClientModule} from "@angular/common/http";
-import {Endpoint} from "../model/endpoint";
+import {Endpoint} from "../model/models";
 import {EndpointFormComponent} from "../endpoint-form/endpoint-form.component";
 import {EndpointService} from "../service/endpoint.service";
 import {MatSlideToggle} from "@angular/material/slide-toggle";

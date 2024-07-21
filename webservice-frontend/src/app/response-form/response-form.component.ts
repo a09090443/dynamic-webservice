@@ -12,7 +12,7 @@ import {
   MatDialogRef,
   MatDialogTitle
 } from "@angular/material/dialog";
-import {Response} from "../model/response";
+import {Response} from "../model/models";
 import {ResponseService} from "../service/response.service";
 import {MatCheckbox} from "@angular/material/checkbox";
 

@@ -10,7 +10,7 @@ import {NgClass, NgIf} from "@angular/common";
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from "@angular/forms";
 import {MatInputModule} from '@angular/material/input';
-import {Endpoint} from "../model/endpoint";
+import {Endpoint} from "../model/models";
 import {MatCheckbox} from "@angular/material/checkbox";
 import {MatIcon} from "@angular/material/icon";
 import {MatButton, MatIconButton} from "@angular/material/button";
