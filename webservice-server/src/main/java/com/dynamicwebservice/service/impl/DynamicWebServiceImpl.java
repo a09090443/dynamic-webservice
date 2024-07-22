@@ -13,7 +13,6 @@ import com.dynamicwebservice.service.DynamicWebService;
 import com.dynamicwebservice.util.WebServiceHandler;
 import com.zipe.enums.ResourceEnum;
 import com.zipe.jdbc.criteria.Conditions;
-import com.zipe.util.file.FileUtil;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.PersistenceException;
 import lombok.extern.slf4j.Slf4j;
@@ -22,16 +21,9 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -64,8 +56,7 @@ public class DynamicWebServiceImpl implements DynamicWebService {
     public List<EndpointDTO> getEndpoints() {
 
         ResourceEnum resource = ResourceEnum.SQL.getResource(EndPointJDBC.SQL_SELECT_ENDPOINT_RELATED_JAR_FILE);
-        String sql = readFileFromJar(resource);
-        List<WebServiceModel> webServiceModelList = endPointJDBC.queryForList(sql, new Conditions(), new HashMap<>(), WebServiceModel.class);
+        List<WebServiceModel> webServiceModelList = endPointJDBC.queryForList(resource, new Conditions(), WebServiceModel.class);
 
         return webServiceModelList.stream().map(endpoint -> {
             EndpointDTO dto = new EndpointDTO();
@@ -168,10 +159,9 @@ public class DynamicWebServiceImpl implements DynamicWebService {
     @Override
     public void disabledJarFile(String publishUrl) {
         ResourceEnum resource = ResourceEnum.SQL.getResource(EndPointJDBC.SQL_SELECT_ENDPOINT_RELATED_JAR_FILE);
-        String sql = readFileFromJar(resource);
         Conditions conditions = new Conditions();
         conditions.equal("e.PUBLISH_URL", publishUrl);
-        List<WebServiceModel> webServiceModelList = endPointJDBC.queryForList(sql, new Conditions(), new HashMap<>(), WebServiceModel.class);
+        List<WebServiceModel> webServiceModelList = endPointJDBC.queryForList(resource, new Conditions(), WebServiceModel.class);
         webServiceModelList.forEach(endpoint -> {
             try {
                 JarFileEntity jarFileEntity = getJarFile(endpoint.getJarFileId());
@@ -193,31 +183,6 @@ public class DynamicWebServiceImpl implements DynamicWebService {
             throw new WebserviceException("移除 Web Service 失敗");
         }
     }
-
-    private String readFileFromJar(ResourceEnum resource) {
-        StringBuilder path = new StringBuilder();
-        path.append(resource.dir());
-        path.append(resource.file());
-        path.append(resource.extension());
-        File jarFile = null;
-        try {
-            jarFile = FileUtil.getFileFromClasspath(path.toString());
-            FileInputStream fis = new FileInputStream(jarFile);
-            // 檢查資源是否存在
-            if (!jarFile.exists()) {
-                throw new WebserviceException("File not found: " + jarFile.getAbsoluteFile().getAbsolutePath());
-            }
-
-            try (BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(fis, StandardCharsets.UTF_8))) {
-                return reader.lines().collect(Collectors.joining("\n"));
-            }
-        } catch (Exception e) {
-            assert jarFile != null;
-            throw new WebserviceException("Error reading file from JAR: " + jarFile.getAbsoluteFile().getAbsolutePath(), e);
-        }
-    }
-
     private JarFileEntity getJarFile(String jarFileId) {
         return jarFileRepository.findById(jarFileId).orElseThrow(() -> new WebserviceException("找不到對應的 Jar 檔案"));
     }
