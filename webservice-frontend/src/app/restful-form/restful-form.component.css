@@ -1,0 +1,14 @@
+.success-message {
+  color: blue;
+  margin-top: 10px;
+}
+
+.error-message {
+  color: red;
+  margin-top: 10px;
+}
+
+.countdown {
+  color: green;
+  margin-top: 10px;
+}
