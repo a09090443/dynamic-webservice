@@ -6,6 +6,6 @@ import java.util.List;
 
 public interface DynamicControllerService {
 
-    void register(ControllerDTO controllerDTO);
+    void saveController(ControllerDTO controllerDTO);
     List<ControllerDTO> getControllers();
 }

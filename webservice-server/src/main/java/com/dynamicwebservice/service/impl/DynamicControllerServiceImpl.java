@@ -1,16 +1,16 @@
 package com.dynamicwebservice.service.impl;
 
 import com.dynamicwebservice.dto.ControllerDTO;
-import com.dynamicwebservice.dto.EndpointDTO;
 import com.dynamicwebservice.exception.ControllerException;
 import com.dynamicwebservice.jdbc.ControllerJDBC;
-import com.dynamicwebservice.model.WebServiceModel;
+import com.dynamicwebservice.model.ControllerModel;
 import com.dynamicwebservice.repository.ControllerRepository;
 import com.dynamicwebservice.service.DynamicControllerService;
 import com.zipe.enums.ResourceEnum;
 import com.zipe.jdbc.criteria.Conditions;
 import com.zipe.util.classloader.CustomClassLoader;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -25,7 +25,6 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 
 import java.lang.reflect.Method;
 import java.net.URL;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -39,16 +38,19 @@ public class DynamicControllerServiceImpl implements DynamicControllerService {
 
     private final ControllerRepository controllerRepository;
 
+    private final ControllerJDBC controllerJDBC;
+
     public DynamicControllerServiceImpl(ApplicationContext context,
                                         RequestMappingHandlerMapping requestMappingHandlerMapping,
-                                        ControllerRepository controllerRepository) {
+                                        ControllerRepository controllerRepository, ControllerJDBC controllerJDBC) {
         this.context = context;
         this.requestMappingHandlerMapping = requestMappingHandlerMapping;
         this.controllerRepository = controllerRepository;
+        this.controllerJDBC = controllerJDBC;
     }
 
     @Override
-    public void register(ControllerDTO controllerDTO) {
+    public void saveController(ControllerDTO controllerDTO) {
         String jarPath = "file:" + context.getEnvironment().getProperty("jar.file.dir") + controllerDTO.getJarFileName();
 
         try (CustomClassLoader loader = new CustomClassLoader(new URL[]{new URL(jarPath)}, this.getClass().getClassLoader())) {
@@ -76,22 +78,14 @@ public class DynamicControllerServiceImpl implements DynamicControllerService {
     @Override
     public List<ControllerDTO> getControllers() {
 
-//        ResourceEnum resource = ResourceEnum.SQL.getResource(ControllerJDBC.SQL_SELECT_CONTROLLER_RELATED_JAR_FILE);
-//        String sql = readFileFromJar(resource);
-//        List<WebServiceModel> webServiceModelList = endPointJDBC.queryForList(sql, new Conditions(), new HashMap<>(), WebServiceModel.class);
-//
-//        return webServiceModelList.stream().map(endpoint -> {
-//            EndpointDTO dto = new EndpointDTO();
-//            dto.setId(endpoint.getId());
-//            dto.setPublishUri(endpoint.getPublishUri());
-//            dto.setClassPath(endpoint.getClassPath());
-//            dto.setBeanName(endpoint.getBeanName());
-//            dto.setIsActive(endpoint.getIsActive());
-//            dto.setJarFileId(endpoint.getJarFileId());
-//            dto.setJarFileName(endpoint.getJarFileName());
-//            return dto;
-//        }).toList();
-        return null;
+        ResourceEnum resource = ResourceEnum.SQL.getResource(ControllerJDBC.SQL_SELECT_CONTROLLER_RELATED_JAR_FILE);
+        List<ControllerModel> controllerModelList = controllerJDBC.queryForList(resource, new Conditions(), ControllerModel.class);
+
+        return controllerModelList.stream().map(controller -> {
+            ControllerDTO dto = new ControllerDTO();
+            BeanUtils.copyProperties(controller, dto);
+            return dto;
+        }).toList();
     }
 
     private RequestMappingInfo getMappingForMethod(Method method, String classLevelPath) {

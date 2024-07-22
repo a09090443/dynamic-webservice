@@ -19,21 +19,25 @@ public class MockResponseDao {
         this.mockResponseJDBC = mockResponseJDBC;
     }
 
-    public String findByPrimaryKey(String publishUrl, String method, String condition) {
+    public <R> R findByPrimaryKey(String publishUri, String method, String condition, Class<R> clazz) {
         ResourceEnum resource = ResourceEnum.SQL.getResource(MockResponseJDBC.SQL_SELECT_RESPONSE_CONTENT);
+
         Map<String, Object> paramMap = new HashMap<>();
-        paramMap.put("publishUrl", publishUrl);
+        paramMap.put("publishUri", publishUri);
         paramMap.put("method", method);
         paramMap.put("condition", condition);
 
         try {
-            return mockResponseJDBC.queryForObject(resource, paramMap, String.class);
+            return mockResponseJDBC.queryForObject(resource, paramMap, clazz);
         } catch (IncorrectResultSizeDataAccessException e) {
-            log.error("publishUrl:{}", publishUrl);
-            log.error("method:{}", method);
-            log.error("condition:{}", condition);
-            log.error("IncorrectResultSizeDataAccessException:{}", e.getMessage(), e);
-            return "";
+            log.error("Error querying for object with publishUri: {}, method: {}, condition: {}. Exception: {}",
+                    publishUri, method, condition, e.getMessage(), e);
+            return null;
+        } catch (Exception e) {
+            log.error("Unexpected exception querying for object with publishUri: {}, method: {}, condition: {}. Exception: {}",
+                    publishUri, method, condition, e.getMessage(), e);
+            return null;
         }
     }
+
 }

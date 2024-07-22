@@ -14,12 +14,12 @@ import {DatePipe, NgForOf, NgIf, NgSwitch, NgSwitchCase, NgSwitchDefault} from "
 import {HeaderComponent} from "../header/header.component";
 import {HttpClientModule} from "@angular/common/http";
 import {MatSlideToggle} from "@angular/material/slide-toggle";
-import {Endpoint, Restful} from "../model/models";
+import {Restful} from "../model/models";
 import {SelectionModel} from "@angular/cdk/collections";
 import {Router} from "@angular/router";
 import {RestfulService} from "../service/restful.service";
-import {EndpointFormComponent} from "../endpoint-form/endpoint-form.component";
 import {ErrorDialogComponent} from "../error-dialog/error-dialog.component";
+import {RestfulFormComponent} from "../restful-form/restful-form.component";
 
 const COLUMNS_SCHEMA = [
   {
@@ -201,17 +201,17 @@ export class RestfulComponent  implements OnInit, AfterViewInit {
     console.log(id);
   }
 
-  openEndpointForm(row?: Endpoint) {
-    const dialogRef = this.dialog.open(EndpointFormComponent, {
+  openRestfulForm(row?: Restful) {
+    const dialogRef = this.dialog.open(RestfulFormComponent, {
       width: '600px',
       disableClose: true,
       data: row,
     });
-    dialogRef.componentInstance.endpointSaved.subscribe((newEndpoint: Endpoint) => {
+    dialogRef.componentInstance.restfulSaved.subscribe((newRestful: Restful) => {
       if (!row) {
-        this.addRow(newEndpoint);
+        this.addRow(newRestful);
       } else {
-        Object.assign(row, newEndpoint);
+        Object.assign(row, newRestful);
       }
     });
   }
