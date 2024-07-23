@@ -2,7 +2,6 @@ package com.dynamicwebservice.util;
 
 import com.dynamicwebservice.dto.EndpointDTO;
 import com.dynamicwebservice.exception.WebserviceException;
-import com.zipe.util.classloader.CustomClassLoader;
 import com.zipe.util.string.StringConstant;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.cxf.Bus;
@@ -15,12 +14,13 @@ import java.net.URL;
 
 @Slf4j
 public class WebServiceHandler {
-    public void registerWebService(EndpointDTO endpointDTO, ApplicationContext context, String fileName) throws IOException, ClassNotFoundException {
+    public void registerWebService(DynamicClassLoader classLoader, EndpointDTO endpointDTO, ApplicationContext context, String fileName) throws IOException, ClassNotFoundException {
 
         String jarPath = "file:" + context.getEnvironment().getProperty("jar.file.dir") + fileName;
         DynamicBeanUtil dynamicBeanUtil = new DynamicBeanUtil(context);
-        try (CustomClassLoader loader = new CustomClassLoader(new URL[]{new URL(jarPath)}, this.getClass().getClassLoader())) {
-            Class<?> loadedClass = loader.loadClass(endpointDTO.getClassPath());
+        try {
+            classLoader.addURL(new URL(jarPath));
+            Class<?> loadedClass = classLoader.loadClass(endpointDTO.getClassPath());
             this.setBeanName(context, endpointDTO.getBeanName(), loadedClass);
             EndpointImpl endpoint;
             endpoint = new EndpointImpl(context.getBean(Bus.class), dynamicBeanUtil.getBean(endpointDTO.getBeanName(), loadedClass));
@@ -32,7 +32,7 @@ public class WebServiceHandler {
         }
     }
 
-    public void removeWebService(String publicUrl, Bus bus, ApplicationContext context, String jarName) {
+    public void removeWebService(DynamicClassLoader classLoader, String publicUrl, Bus bus, ApplicationContext context, String jarName) {
         ServerRegistry serverRegistry = bus.getExtension(ServerRegistry.class);
 
         serverRegistry.getServers().stream()
@@ -44,11 +44,11 @@ public class WebServiceHandler {
                     serverRegistry.getServers().remove(server);
                 });
         String jarPath = "file:" + context.getEnvironment().getProperty("jar.file.dir") + jarName;
-        try (CustomClassLoader loader = new CustomClassLoader(new URL[]{new URL(jarPath)}, this.getClass().getClassLoader())) {
-            loader.unloadJarFile(new URL(jarPath));
+        try {
+            classLoader.unloadJarFile(new URL(jarPath));
         } catch (Exception e) {
             log.error("Web Service 移除服務:{}, 失敗", publicUrl, e);
-            throw new WebserviceException("Web Service 移除服務失敗");
+            throw new WebserviceException("移除服務失敗");
         }
     }
 

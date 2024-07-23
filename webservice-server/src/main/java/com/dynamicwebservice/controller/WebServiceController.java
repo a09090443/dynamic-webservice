@@ -93,23 +93,17 @@ public class WebServiceController {
         EndpointDTO endpointDTO;
         EndpointDTO newEndpointDTO = new EndpointDTO();
 
-        try {
-            endpointDTO = Optional.ofNullable(
-                    dynamicWebService.getEndpoint(request.getId())).orElseThrow(() -> new WebserviceException("Endpoint not found"));
-            dynamicWebService.disabledWebService(endpointDTO.getPublishUri(), false);
+        endpointDTO = Optional.ofNullable(
+                dynamicWebService.getEndpoint(request.getId())).orElseThrow(() -> new WebserviceException("Endpoint not found"));
+        dynamicWebService.disabledWebService(endpointDTO.getPublishUri(), false);
 
-            BeanUtils.copyProperties(request, newEndpointDTO);
-            newEndpointDTO.setIsActive(false);
-            dynamicWebService.updateWebService(newEndpointDTO);
+        BeanUtils.copyProperties(request, newEndpointDTO);
+        newEndpointDTO.setIsActive(false);
+        dynamicWebService.updateWebService(newEndpointDTO);
 
-            if (!endpointDTO.getPublishUri().equals(newEndpointDTO.getPublishUri())) {
-                dynamicWebService.removeWebService(endpointDTO.getPublishUri());
-                commonService.updateMockResponse(endpointDTO.getPublishUri(), newEndpointDTO.getPublishUri());
-            }
-
-        } catch (Exception e) {
-            log.error("Update web service failed:{}", e.getMessage(), e);
-            return Result.failure(ResultStatus.BAD_REQUEST);
+        if (!endpointDTO.getPublishUri().equals(newEndpointDTO.getPublishUri())) {
+            dynamicWebService.removeWebService(endpointDTO.getPublishUri());
+            commonService.updateMockResponse(endpointDTO.getPublishUri(), newEndpointDTO.getPublishUri());
         }
 
         EndpointResponseDTO response = new EndpointResponseDTO();

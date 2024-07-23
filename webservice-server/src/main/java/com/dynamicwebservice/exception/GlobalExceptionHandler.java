@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(WebserviceException.class)
+    @ExceptionHandler({WebserviceException.class, ControllerException.class})
     public ResponseEntity<String> handleCustomException(WebserviceException e) {
         return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }

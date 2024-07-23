@@ -24,7 +24,7 @@ export class RestfulService {
   }
 
   async deleteRestful(publishUrls: string[]): Promise<any> {
-    return await firstValueFrom(this.http.request('delete', `${config.apiUrl}/webservice-server/api/removeWebService`, {
+    return await firstValueFrom(this.http.request('delete', `${config.apiUrl}/webservice-server/api/removeController`, {
       body: publishUrls
     }).pipe(
       catchError(this.handleError)
@@ -50,7 +50,7 @@ export class RestfulService {
     const params = new HttpParams()
       .set('publishUri', publishUri)
       .set('isActive', isActive.toString());
-    return await firstValueFrom(this.http.get(`${config.apiUrl}/webservice-server/api/switchWebService`, { params }));
+    return await firstValueFrom(this.http.get(`${config.apiUrl}/webservice-server/api/switchController`, { params }));
   }
 
 }

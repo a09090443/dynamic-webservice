@@ -8,7 +8,6 @@ import com.dynamicwebservice.exception.WebserviceException;
 import com.dynamicwebservice.jdbc.EndPointJDBC;
 import com.dynamicwebservice.model.WebServiceModel;
 import com.dynamicwebservice.repository.EndpointRepository;
-import com.dynamicwebservice.repository.JarFileRepository;
 import com.dynamicwebservice.service.DynamicWebService;
 import com.dynamicwebservice.util.WebServiceHandler;
 import com.zipe.enums.ResourceEnum;
@@ -18,7 +17,6 @@ import jakarta.persistence.PersistenceException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.cxf.Bus;
 import org.springframework.beans.BeanUtils;
-import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -27,28 +25,19 @@ import java.util.UUID;
 
 @Slf4j
 @Service
-public class DynamicWebServiceImpl implements DynamicWebService {
-
-    private final ApplicationContext context;
+public class DynamicWebServiceImpl extends BaseService implements DynamicWebService {
 
     private final Bus bus;
 
     private final EndpointRepository endpointRepository;
 
-    private final JarFileRepository jarFileRepository;
-
     private final EndPointJDBC endPointJDBC;
 
-
-    DynamicWebServiceImpl(ApplicationContext context,
-                          Bus bus,
+    DynamicWebServiceImpl(Bus bus,
                           EndpointRepository endpointRepository,
-                          JarFileRepository jarFileRepository,
                           EndPointJDBC endPointJDBC) {
-        this.context = context;
         this.bus = bus;
         this.endpointRepository = endpointRepository;
-        this.jarFileRepository = jarFileRepository;
         this.endPointJDBC = endPointJDBC;
     }
 
@@ -117,15 +106,15 @@ public class DynamicWebServiceImpl implements DynamicWebService {
     }
 
     @Override
-    public void enabledWebService(String publishUrl) {
-        EndpointEntity endpointEntity = endpointRepository.findById(publishUrl).orElseThrow(() -> new WebserviceException("找不到對應的 Web Service"));
+    public void enabledWebService(String publishUri) {
+        EndpointEntity endpointEntity = endpointRepository.findById(publishUri).orElseThrow(() -> new WebserviceException("找不到對應的 Web Service"));
         JarFileEntity jarFileEntity = getJarFile(endpointEntity.getJarFileId());
         WebServiceHandler registerWebService = new WebServiceHandler();
         EndpointDTO endpointDTO = new EndpointDTO();
 
         try {
             BeanUtils.copyProperties(endpointEntity, endpointDTO);
-            registerWebService.registerWebService(endpointDTO, context, jarFileEntity.getName());
+            registerWebService.registerWebService(dynamicClassLoader, endpointDTO, context, jarFileEntity.getName());
             endpointEntity.setIsActive(Boolean.TRUE);
             endpointRepository.save(endpointEntity);
         } catch (RuntimeException | IOException | ClassNotFoundException e) {
@@ -136,12 +125,12 @@ public class DynamicWebServiceImpl implements DynamicWebService {
     }
 
     @Override
-    public void disabledWebService(String publicUrl, Boolean isDeleted) {
-        EndpointEntity endpointEntity = endpointRepository.findById(publicUrl).orElseThrow(() -> new WebserviceException("找不到對應的 Web Service"));
+    public void disabledWebService(String publicUri, Boolean isDeleted) {
+        EndpointEntity endpointEntity = endpointRepository.findById(publicUri).orElseThrow(() -> new WebserviceException("找不到對應的 Web Service"));
         JarFileEntity jarFileEntity = getJarFile(endpointEntity.getJarFileId());
         WebServiceHandler registerWebService = new WebServiceHandler();
         try {
-            registerWebService.removeWebService(publicUrl, bus, context, jarFileEntity.getName());
+            registerWebService.removeWebService(dynamicClassLoader, publicUri, bus, context, jarFileEntity.getName());
             endpointEntity.setIsActive(Boolean.FALSE);
             jarFileEntity.setStatus(JarFileStatus.INACTIVE);
             jarFileRepository.save(jarFileEntity);
@@ -175,15 +164,12 @@ public class DynamicWebServiceImpl implements DynamicWebService {
     }
 
     @Override
-    public void removeWebService(String publishUrl) {
+    public void removeWebService(String publishUri) {
         try {
-            this.disabledWebService(publishUrl, true);
+            this.disabledWebService(publishUri, true);
         } catch (Exception e) {
             log.error("移除 Web Service 失敗:{}", e.getMessage(), e);
             throw new WebserviceException("移除 Web Service 失敗");
         }
-    }
-    private JarFileEntity getJarFile(String jarFileId) {
-        return jarFileRepository.findById(jarFileId).orElseThrow(() -> new WebserviceException("找不到對應的 Jar 檔案"));
     }
 }
