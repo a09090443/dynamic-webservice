@@ -20,7 +20,8 @@ import java.io.IOException;
 @Slf4j
 @WebService(serviceName = "CompanyWebService",//對外發布的服務名
         targetNamespace = "http://service.other.com",//指定你想要的名稱空間，通常使用使用包名反轉
-        endpointInterface = "com.company.webservice.CompanyWebService")//服務接口全路徑, 指定做SEI（Service EndPoint Interface）服務端點接口
+        endpointInterface = "com.company.webservice.CompanyWebService")
+//服務接口全路徑, 指定做SEI（Service EndPoint Interface）服務端點接口
 @Component
 public class CompanyWebServiceImpl extends BaseWebservice implements CompanyWebService {
 
@@ -28,7 +29,7 @@ public class CompanyWebServiceImpl extends BaseWebservice implements CompanyWebS
     public CompanyResponse getCompany(CompanyRequest request) throws IOException, SOAPException, TransformerException {
         ObjectMapper objectMapper = new ObjectMapper();
         String jsonString = objectMapper.writeValueAsString(request);
-        String responseContent = mockResponseDao.findByPrimaryKey("company", "getCompany", jsonString);
+        String responseContent = mockResponseDao.findByPrimaryKey("company", "getCompany", jsonString, String.class);
 
         String soapResXml = SoapUtil.getFromSoapXml(responseContent, "ns4:getCompanyResponse");
         GetCompanyResponse response = XmlUtil.xmlToBean(soapResXml, GetCompanyResponse.class);
@@ -36,7 +37,7 @@ public class CompanyWebServiceImpl extends BaseWebservice implements CompanyWebS
         return response.getCompanyResponse();
     }
 
-    private CompanyResponse defaultResult(CompanyRequest request){
+    private CompanyResponse defaultResult(CompanyRequest request) {
         CompanyResponse response = new CompanyResponse();
         response.setName(request.getName());
         response.setTaxId(request.getTaxId());

@@ -11,7 +11,7 @@ import javax.xml.transform.TransformerException;
 import java.io.IOException;
 
 class ConvertTest {
-    //    @Test
+    @Test
     void xmlToResponse() throws SOAPException, IOException, TransformerException {
         String soapResXml = SoapUtil.getFromSoapXml(mockXml(), "ns4:getCompanyResponse");
         GetCompanyResponse response = XmlUtil.xmlToBean(soapResXml, GetCompanyResponse.class);
@@ -37,17 +37,20 @@ class ConvertTest {
 
     private String mockRequestJson() {
         return """
-                 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="http://service.other.com" xmlns:emp="employee" xmlns:com="company">
-                    <soapenv:Header/>
-                    <soapenv:Body>
-                       <ser:getCompany>
-                          <ser:CompanyRequest>
-                             <com:name>Jen</com:name>
-                             <com:taxId>123456789</com:taxId>
-                          </ser:CompanyRequest>
-                       </ser:getCompany>
-                    </soapenv:Body>
-                 </soapenv:Envelope>
+                <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="http://service.other.com" xmlns:emp="employee" xmlns:com="company">
+                   <soapenv:Header/>
+                   <soapenv:Body>
+                      <ser:getCompany>
+                         <!--Optional:-->
+                         <ser:CompanyRequest>
+                            <!--Optional:-->
+                            <com:name>Jen</com:name>
+                            <!--Optional:-->
+                            <com:taxId>123456789</com:taxId>
+                         </ser:CompanyRequest>
+                      </ser:getCompany>
+                   </soapenv:Body>
+                </soapenv:Envelope>
                 """;
     }
 }
