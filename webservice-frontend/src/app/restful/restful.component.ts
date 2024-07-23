@@ -237,7 +237,7 @@ export class RestfulComponent  implements OnInit, AfterViewInit {
         (error) => {
           this.dialog.open(ErrorDialogComponent, {
             width: '600px',
-            data: error.error,
+            data: error.error.message,
           });
         }
       );
